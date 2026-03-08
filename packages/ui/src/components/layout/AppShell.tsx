@@ -17,7 +17,7 @@ export function AppShell({ sidebar, children, statusBar, titleBar, windowControl
       {titleBar && (
         <div className="h-9 flex-shrink-0 bg-[rgb(var(--surface))] border-b border-[rgb(var(--border-subtle))] flex items-center">
           {/* Draggable area — fills space between logo and window controls */}
-          <div className="drag-region flex-1 h-full flex items-center">
+          <div data-tauri-drag-region className="drag-region flex-1 h-full flex items-center">
             {titleBar}
           </div>
           {/* Window controls — outside drag region so clicks work */}

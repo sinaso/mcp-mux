@@ -14,16 +14,12 @@
     "deep-link": {
       "mobile": [],
       "desktop": {
-        "schemes": [
-          "mcpmux"
-        ]
+        "schemes": ["mcpmux"]
       }
     },
     "updater": {
-      "endpoints": [
-        "https://github.com/mcpmux/mcp-mux/releases/latest/download/latest.json"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdCQUZGMEVCMEZBOTk5RTcKUldUbm1ha1A2L0N2ZTlOZjN5T3pGOHBHRUlibytMY2tPeWJkQ01heDJzdTJqK3B3a2lBdDZ1T1oK"
+      "endpoints": ["https://github.com/mcpmux/mcp-mux/releases/latest/download/latest.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMwMTc1QTQ1QTM5Mjk4QzQKUldURW1KS2pSVm9YTU04alJYV3RFMWlzN0pPd2hyLzV4WTBZQzUzb1p5TThSMzVtWDVZaXJLaXUK"
     }
   },
   "app": {
@@ -78,32 +74,20 @@
         "headerImage": null,
         "sidebarImage": null,
         "installMode": "currentUser",
-        "languages": [
-          "English"
-        ],
+        "languages": ["English"],
         "displayLanguageSelector": false
       }
     },
     "linux": {
       "deb": {
         "section": "utils",
-        "depends": [
-          "librsvg2-2"
-        ],
-        "recommends": [
-          "libsecret-1-0",
-          "gnome-keyring"
-        ],
+        "depends": ["librsvg2-2"],
+        "recommends": ["libsecret-1-0", "gnome-keyring"],
         "desktopTemplate": "linux/mcpmux.desktop"
       },
       "rpm": {
-        "depends": [
-          "librsvg2"
-        ],
-        "recommends": [
-          "libsecret",
-          "gnome-keyring"
-        ]
+        "depends": ["librsvg2"],
+        "recommends": ["libsecret", "gnome-keyring"]
       }
     }
   }

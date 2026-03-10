@@ -1,6 +1,6 @@
 # Branding Configuration
 # Single source of truth for all product naming
-# 
+#
 
 [branding]
 # User-facing display name
@@ -15,7 +15,7 @@ deep_link_scheme = "mcpmux"
 # Primary domain
 domain = "mcpmux.com"
 
-# API subdomain  
+# API subdomain
 api_domain = "api.mcpmux.com"
 
 # Keychain/credential manager service name
@@ -32,3 +32,11 @@ github_org = "mcpmux"
 
 # NPM scope
 npm_scope = "@mcpmux"
+
+[branding.oauth]
+# Branding URIs sent during Dynamic Client Registration (RFC 7591)
+# OAuth servers display these on consent screens
+logo_uri = "https://mcpmux.com/favicon.svg"
+client_uri = "https://mcpmux.com"
+tos_uri = "https://mcpmux.com/docs/"
+policy_uri = "https://mcpmux.com/docs/"

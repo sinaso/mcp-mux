@@ -23,7 +23,7 @@ use mcpmux_core::{
     branding, CredentialRepository, CredentialType, LogLevel, LogSource, OutboundOAuthRepository,
     ServerLog, ServerLogManager,
 };
-use rmcp::transport::auth::{AuthError, AuthorizationManager, AuthorizationSession, OAuthState};
+use rmcp::transport::auth::{AuthError, AuthorizationManager, OAuthState};
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
@@ -1169,62 +1169,156 @@ impl OutboundOAuthManager {
                 .as_ref()
                 .map(Self::get_scopes_from_metadata)
                 .unwrap_or_default();
-            let scope_refs = Self::scopes_as_refs(&scopes);
 
-            match AuthorizationSession::new(
-                manager,
-                &scope_refs,
-                &redirect_uri,
-                Some(&client_name),
-                None,
-            )
-            .await
-            {
-                Ok(session) => {
-                    oauth_state = OAuthState::Session(session);
+            // Get registration endpoint from discovered metadata
+            let registration_endpoint = metadata_for_storage
+                .as_ref()
+                .and_then(|m| m.registration_endpoint.clone());
+
+            match registration_endpoint {
+                Some(reg_endpoint) => {
+                    // Custom DCR with branding fields (RFC 7591)
+                    let mut dcr_body = serde_json::json!({
+                        "client_name": client_name,
+                        "redirect_uris": [redirect_uri],
+                        "grant_types": ["authorization_code", "refresh_token"],
+                        "response_types": ["code"],
+                        "token_endpoint_auth_method": "none",
+                    });
+
+                    // Add branding metadata from branding.toml
+                    if let Some(obj) = dcr_body.as_object_mut() {
+                        for (key, value) in branding::outbound_dcr_metadata() {
+                            obj.insert(
+                                key.to_string(),
+                                serde_json::Value::String(value.to_string()),
+                            );
+                        }
+                        // Add scopes if available
+                        if !scopes.is_empty() {
+                            obj.insert(
+                                "scope".to_string(),
+                                serde_json::Value::String(scopes.join(" ")),
+                            );
+                        }
+                    }
+
+                    info!(
+                        "[OAuth] Performing custom DCR with branding to: {}",
+                        reg_endpoint
+                    );
+
+                    let http_client = reqwest::Client::new();
+                    let dcr_response = http_client
+                        .post(&reg_endpoint)
+                        .header("Content-Type", "application/json")
+                        .json(&dcr_body)
+                        .send()
+                        .await
+                        .map_err(|e| anyhow::anyhow!("DCR request failed: {}", e))?;
+
+                    if !dcr_response.status().is_success() {
+                        let status = dcr_response.status();
+                        let body = dcr_response
+                            .text()
+                            .await
+                            .unwrap_or_else(|_| "<unreadable>".to_string());
+                        self.log(
+                            &space_id_str,
+                            server_id,
+                            LogLevel::Error,
+                            format!("DCR registration failed: HTTP {} - {}", status, body),
+                            Some(serde_json::json!({"status": status.as_u16(), "body": body})),
+                        )
+                        .await;
+                        return Err(anyhow::anyhow!(
+                            "Client registration failed: HTTP {} - {}",
+                            status,
+                            body
+                        ));
+                    }
+
+                    let dcr_result: serde_json::Value = dcr_response
+                        .json()
+                        .await
+                        .map_err(|e| anyhow::anyhow!("Failed to parse DCR response: {}", e))?;
+
+                    let new_client_id = dcr_result["client_id"]
+                        .as_str()
+                        .ok_or_else(|| anyhow::anyhow!("DCR response missing client_id"))?
+                        .to_string();
+
+                    let new_client_secret =
+                        dcr_result["client_secret"].as_str().map(|s| s.to_string());
+
+                    info!(
+                        "[OAuth] Custom DCR succeeded, client_id={}",
+                        &new_client_id[..8.min(new_client_id.len())]
+                    );
+
+                    // Configure rmcp with the registered client
+                    let config = rmcp::transport::auth::OAuthClientConfig {
+                        client_id: new_client_id,
+                        client_secret: new_client_secret,
+                        scopes: scopes.clone(),
+                        redirect_uri: redirect_uri.clone(),
+                    };
+
+                    if let Err(e) = manager.configure_client(config) {
+                        self.log(
+                            &space_id_str,
+                            server_id,
+                            LogLevel::Error,
+                            format!("Failed to configure client after DCR: {}", e),
+                            Some(serde_json::json!({"error": e.to_string()})),
+                        )
+                        .await;
+                        return Err(anyhow::anyhow!("Failed to configure client: {}", e));
+                    }
+
+                    // Generate authorization URL
+                    let scope_refs = Self::scopes_as_refs(&scopes);
+                    let auth_url = manager
+                        .get_authorization_url(&scope_refs)
+                        .await
+                        .map_err(|e| anyhow::anyhow!("Failed to get auth URL: {}", e))?;
+
+                    // Build session (same pattern as the reuse-DCR branch)
+                    oauth_state =
+                        OAuthState::Session(rmcp::transport::auth::AuthorizationSession {
+                            auth_manager: std::mem::replace(
+                                &mut manager,
+                                rmcp::transport::auth::AuthorizationManager::new(server_url)
+                                    .await
+                                    .map_err(|e| anyhow::anyhow!("Failed: {}", e))?,
+                            ),
+                            auth_url: auth_url.clone(),
+                            redirect_uri: redirect_uri.clone(),
+                        });
+
                     self.log(
                         &space_id_str,
                         server_id,
                         LogLevel::Info,
-                        "Dynamic Client Registration (DCR) completed successfully".to_string(),
+                        "Dynamic Client Registration (DCR) with branding completed successfully"
+                            .to_string(),
                         None,
                     )
                     .await;
                 }
-                Err(AuthError::NoAuthorizationSupport) => {
+                None => {
+                    // No registration endpoint - server doesn't support DCR
                     self.log(
                         &space_id_str,
                         server_id,
                         LogLevel::Warn,
-                        "OAuth not supported: Server doesn't support OAuth discovery".to_string(),
+                        "OAuth server has no registration_endpoint - DCR not supported".to_string(),
                         None,
                     )
                     .await;
                     return Ok(OAuthInitResult::NotSupported(
-                        "Server doesn't support OAuth discovery".to_string(),
+                        "Server doesn't support Dynamic Client Registration".to_string(),
                     ));
-                }
-                Err(AuthError::RegistrationFailed(msg)) => {
-                    self.log(
-                        &space_id_str,
-                        server_id,
-                        LogLevel::Error,
-                        format!("DCR registration failed: {}", msg),
-                        Some(serde_json::json!({"error": msg})),
-                    )
-                    .await;
-                    return Err(anyhow::anyhow!("Client registration failed: {}", msg));
-                }
-                Err(e) => {
-                    self.log(
-                        &space_id_str,
-                        server_id,
-                        LogLevel::Error,
-                        format!("OAuth flow failed: {}", e),
-                        Some(serde_json::json!({"error": e.to_string()})),
-                    )
-                    .await;
-                    return Err(anyhow::anyhow!("OAuth flow failed: {}", e));
                 }
             }
             (true, metadata_for_storage) // New registration with discovered metadata

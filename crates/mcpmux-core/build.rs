@@ -37,6 +37,12 @@ fn main() {
     let github_org = extract_toml_string(&content, "github_org").unwrap_or("mcpmux");
     let npm_scope = extract_toml_string(&content, "npm_scope").unwrap_or("@mcpmux");
 
+    // OAuth branding fields (RFC 7591 DCR metadata)
+    let oauth_logo_uri = extract_toml_string(&content, "logo_uri").unwrap_or("");
+    let oauth_client_uri = extract_toml_string(&content, "client_uri").unwrap_or("");
+    let oauth_tos_uri = extract_toml_string(&content, "tos_uri").unwrap_or("");
+    let oauth_policy_uri = extract_toml_string(&content, "policy_uri").unwrap_or("");
+
     // Generate Rust constants
     let out_dir = env::var("OUT_DIR").unwrap();
     let rust_path = Path::new(&out_dir).join("branding_generated.rs");
@@ -74,6 +80,18 @@ pub const GITHUB_ORG: &str = {github_org:?};
 
 /// NPM scope
 pub const NPM_SCOPE: &str = {npm_scope:?};
+
+/// OAuth DCR logo URI (RFC 7591)
+pub const OAUTH_LOGO_URI: &str = {oauth_logo_uri:?};
+
+/// OAuth DCR client URI (RFC 7591)
+pub const OAUTH_CLIENT_URI: &str = {oauth_client_uri:?};
+
+/// OAuth DCR terms of service URI (RFC 7591)
+pub const OAUTH_TOS_URI: &str = {oauth_tos_uri:?};
+
+/// OAuth DCR privacy policy URI (RFC 7591)
+pub const OAUTH_POLICY_URI: &str = {oauth_policy_uri:?};
 "#,
         display_name = display_name,
         identifier = identifier,
@@ -85,6 +103,10 @@ pub const NPM_SCOPE: &str = {npm_scope:?};
         mcp_config_key = mcp_config_key,
         github_org = github_org,
         npm_scope = npm_scope,
+        oauth_logo_uri = oauth_logo_uri,
+        oauth_client_uri = oauth_client_uri,
+        oauth_tos_uri = oauth_tos_uri,
+        oauth_policy_uri = oauth_policy_uri,
     );
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");
@@ -108,6 +130,10 @@ pub const LOG_PREFIX: &str = "mcpmux";
 pub const MCP_CONFIG_KEY: &str = "mcpmux";
 pub const GITHUB_ORG: &str = "mcpmux";
 pub const NPM_SCOPE: &str = "@mcpmux";
+pub const OAUTH_LOGO_URI: &str = "";
+pub const OAUTH_CLIENT_URI: &str = "";
+pub const OAUTH_TOS_URI: &str = "";
+pub const OAUTH_POLICY_URI: &str = "";
 "#;
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");

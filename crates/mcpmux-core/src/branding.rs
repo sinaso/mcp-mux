@@ -123,6 +123,36 @@ pub fn outbound_oauth_client_name_for_space(space_name: Option<&str>) -> String 
     }
 }
 
+/// OAuth DCR branding metadata (RFC 7591).
+///
+/// Returns a list of `(field_name, value)` pairs for non-empty branding URIs.
+/// Use this when building a custom DCR request body to include branding fields
+/// that OAuth servers display on consent screens.
+///
+/// # Example
+/// ```ignore
+/// let mut body = serde_json::Map::new();
+/// for (key, value) in branding::outbound_dcr_metadata() {
+///     body.insert(key.to_string(), serde_json::Value::String(value.to_string()));
+/// }
+/// ```
+pub fn outbound_dcr_metadata() -> Vec<(&'static str, &'static str)> {
+    let mut fields = Vec::new();
+    if !OAUTH_LOGO_URI.is_empty() {
+        fields.push(("logo_uri", OAUTH_LOGO_URI));
+    }
+    if !OAUTH_CLIENT_URI.is_empty() {
+        fields.push(("client_uri", OAUTH_CLIENT_URI));
+    }
+    if !OAUTH_TOS_URI.is_empty() {
+        fields.push(("tos_uri", OAUTH_TOS_URI));
+    }
+    if !OAUTH_POLICY_URI.is_empty() {
+        fields.push(("policy_uri", OAUTH_POLICY_URI));
+    }
+    fields
+}
+
 /// Default preferred port for OAuth callbacks (adjacent to gateway port)
 ///
 /// Uses a high port number to avoid conflicts:

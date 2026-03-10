@@ -83,20 +83,11 @@ pub struct McpClientHandler {
 
 impl McpClientHandler {
     pub fn new(server_id: &str) -> Self {
+        let mut impl_info =
+            Implementation::new(format!("mcpmux-{}", server_id), env!("CARGO_PKG_VERSION"));
+        impl_info.title = Some("McpMux Gateway".to_string());
         Self {
-            info: ClientInfo {
-                protocol_version: Default::default(),
-                capabilities: ClientCapabilities::default(),
-                client_info: Implementation {
-                    name: format!("mcpmux-{}", server_id),
-                    version: env!("CARGO_PKG_VERSION").to_string(),
-                    title: Some("McpMux Gateway".to_string()),
-                    icons: None,
-                    website_url: None,
-                    ..Default::default()
-                },
-                meta: None,
-            },
+            info: ClientInfo::new(ClientCapabilities::default(), impl_info),
         }
     }
 }
@@ -217,11 +208,12 @@ impl McpSession {
         let result = self
             .client
             .peer()
-            .call_tool(CallToolRequestParams {
-                name: name.to_string().into(),
-                arguments: args,
-                task: None,
-                meta: None,
+            .call_tool({
+                let mut params = CallToolRequestParams::new(name.to_string());
+                if let Some(args) = args {
+                    params = params.with_arguments(args);
+                }
+                params
             })
             .await
             .context("Tool call failed")?;

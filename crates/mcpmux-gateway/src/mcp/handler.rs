@@ -83,12 +83,14 @@ impl McpMuxGatewayHandler {
 
     /// Build InitializeResult with negotiated protocol version
     fn build_initialize_result(&self, protocol_version: ProtocolVersion) -> InitializeResult {
-        InitializeResult {
-            protocol_version,
-            capabilities: self.get_info().capabilities,
-            server_info: self.get_info().server_info,
-            instructions: self.get_info().instructions,
+        let info = self.get_info();
+        let mut result = InitializeResult::new(info.capabilities)
+            .with_protocol_version(protocol_version)
+            .with_server_info(info.server_info);
+        if let Some(instructions) = info.instructions {
+            result = result.with_instructions(instructions);
         }
+        result
     }
 }
 
@@ -98,32 +100,29 @@ impl ServerHandler for McpMuxGatewayHandler {
 
         // Note: get_info is called frequently, no logging needed
 
-        ServerInfo {
-            protocol_version: Default::default(),
-            capabilities: ServerCapabilities::builder()
-                .enable_tools_with(ToolsCapability {
-                    list_changed: Some(true),
-                })
-                .enable_prompts_with(PromptsCapability {
-                    list_changed: Some(true),
-                })
-                .enable_resources_with(ResourcesCapability {
-                    subscribe: Some(false),
-                    list_changed: Some(true),
-                })
-                .build(),
-            server_info: Implementation {
-                name: "mcpmux-gateway".to_string(),
-                version: env!("CARGO_PKG_VERSION").to_string(),
-                title: Some("McpMux".to_string()),
-                ..Default::default()
-            },
-            instructions: Some(
+        let mut impl_info =
+            Implementation::new("mcpmux-gateway", env!("CARGO_PKG_VERSION"));
+        impl_info.title = Some("McpMux".to_string());
+
+        let capabilities = ServerCapabilities::builder()
+            .enable_tools_with(ToolsCapability {
+                list_changed: Some(true),
+            })
+            .enable_prompts_with(PromptsCapability {
+                list_changed: Some(true),
+            })
+            .enable_resources_with(ResourcesCapability {
+                subscribe: Some(false),
+                list_changed: Some(true),
+            })
+            .build();
+
+        InitializeResult::new(capabilities)
+            .with_server_info(impl_info)
+            .with_instructions(
                 "McpMux aggregates multiple MCP servers. Use tools/prompts/resources \
-                 from your authorized backend servers."
-                    .to_string(),
-            ),
-        }
+                 from your authorized backend servers.",
+            )
     }
 
     async fn initialize(
@@ -321,11 +320,10 @@ impl ServerHandler for McpMuxGatewayHandler {
             "call_tool result"
         );
 
-        let result = CallToolResult {
-            content,
-            structured_content: None,
-            is_error: Some(tool_result.is_error),
-            meta: None,
+        let result = if tool_result.is_error {
+            CallToolResult::error(content)
+        } else {
+            CallToolResult::success(content)
         };
 
         Ok(result)
@@ -557,7 +555,7 @@ impl ServerHandler for McpMuxGatewayHandler {
             .filter_map(|v| serde_json::from_value(v).ok())
             .collect();
 
-        Ok(ReadResourceResult { contents })
+        Ok(ReadResourceResult::new(contents))
     }
 
     /// Override on_custom_request to handle "initialize" with flexible protocol negotiation

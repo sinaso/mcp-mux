@@ -283,11 +283,12 @@ impl RoutingService {
 
             match client_handle {
                 Some(client) => {
-                    let params = CallToolRequestParams {
-                        name: tool_name.into(),
-                        arguments: args.as_object().cloned(),
-                        task: None,
-                        meta: None,
+                    let params = {
+                        let mut p = CallToolRequestParams::new(tool_name);
+                        if let Some(args) = args.as_object().cloned() {
+                            p = p.with_arguments(args);
+                        }
+                        p
                     };
 
                     // Wrap call_tool with timeout to prevent hanging

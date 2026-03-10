@@ -286,12 +286,14 @@ fn build_token_response(
     refresh_token: Option<String>,
     expires_in: Option<std::time::Duration>,
 ) -> OAuthTokenResponse {
-    use oauth2::{EmptyExtraTokenFields, StandardTokenResponse};
+    use oauth2::StandardTokenResponse;
+    use rmcp::transport::auth::VendorExtraTokenFields;
+    use std::collections::HashMap;
 
     let mut response = StandardTokenResponse::new(
         AccessToken::new(access_token),
         BasicTokenType::Bearer,
-        EmptyExtraTokenFields {},
+        VendorExtraTokenFields(HashMap::new()),
     );
 
     if let Some(refresh) = refresh_token {

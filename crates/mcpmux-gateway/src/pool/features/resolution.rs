@@ -54,7 +54,7 @@ impl FeatureResolutionService {
 
         let mut result: Vec<ServerFeature> = all_features
             .into_iter()
-            .filter(|f| f.is_available)
+            .filter(|f| f.is_available && !f.disabled)
             .collect();
 
         if let Some(feature_type) = filter_type {
@@ -169,7 +169,7 @@ impl FeatureResolutionService {
         let mut result: Vec<ServerFeature> = if has_all_grant {
             all_features
                 .into_iter()
-                .filter(|f| f.is_available)
+                .filter(|f| f.is_available && !f.disabled)
                 .collect()
         } else {
             all_features
@@ -177,7 +177,7 @@ impl FeatureResolutionService {
                 .filter(|f| {
                     let in_allowed = allowed_feature_ids.contains(&f.id.to_string());
                     let in_excluded = excluded_feature_ids.contains(&f.id.to_string());
-                    let passes = f.is_available && in_allowed && !in_excluded;
+                    let passes = f.is_available && !f.disabled && in_allowed && !in_excluded;
                     if !passes && in_allowed {
                         debug!(
                             "[FeatureResolution] Feature {} (server={}) filtered out: is_available={}, in_allowed={}, in_excluded={}",
@@ -238,7 +238,7 @@ impl FeatureResolutionService {
                             FeatureSetType::All => {
                                 let ids = all_features
                                     .iter()
-                                    .filter(|f| f.is_available)
+                                    .filter(|f| f.is_available && !f.disabled)
                                     .map(|f| f.id.to_string());
                                 apply_mode_to_set(member.mode, ids, allowed, excluded);
                             }
@@ -246,7 +246,11 @@ impl FeatureResolutionService {
                                 if let Some(ref server_id) = nested_fs.server_id {
                                     let ids = all_features
                                         .iter()
-                                        .filter(|f| f.server_id == *server_id && f.is_available)
+                                        .filter(|f| {
+                                            f.server_id == *server_id
+                                                && f.is_available
+                                                && !f.disabled
+                                        })
                                         .map(|f| f.id.to_string());
                                     apply_mode_to_set(member.mode, ids, allowed, excluded);
                                 }

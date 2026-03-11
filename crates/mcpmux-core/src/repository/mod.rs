@@ -126,6 +126,9 @@ pub trait ServerFeatureRepository: Send + Sync {
     /// Delete a feature
     async fn delete(&self, id: &Uuid) -> RepoResult<()>;
 
+    /// Set the disabled state of a feature
+    async fn set_disabled(&self, id: &Uuid, disabled: bool) -> RepoResult<()>;
+
     /// Mark all features for a server as unavailable
     async fn mark_unavailable(&self, space_id: &str, server_id: &str) -> RepoResult<()>;
 

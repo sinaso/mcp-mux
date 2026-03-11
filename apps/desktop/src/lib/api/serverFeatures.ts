@@ -20,6 +20,7 @@ export interface ServerFeature {
   discovered_at: string;
   last_seen_at: string;
   is_available: boolean;
+  disabled: boolean;
 }
 
 /**
@@ -55,4 +56,11 @@ export async function listServerFeaturesByType(
  */
 export async function getServerFeature(id: string): Promise<ServerFeature | null> {
   return invoke('get_server_feature', { id });
+}
+
+/**
+ * Set the disabled state of a feature.
+ */
+export async function setFeatureDisabled(id: string, disabled: boolean): Promise<void> {
+  return invoke('set_feature_disabled', { id, disabled });
 }

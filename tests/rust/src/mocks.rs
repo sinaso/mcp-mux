@@ -298,6 +298,13 @@ impl ServerFeatureRepository for MockServerFeatureRepository {
         Ok(())
     }
 
+    async fn set_disabled(&self, id: &Uuid, disabled: bool) -> RepoResult<()> {
+        if let Some(feature) = self.features.write().unwrap().get_mut(id) {
+            feature.disabled = disabled;
+        }
+        Ok(())
+    }
+
     async fn mark_unavailable(&self, space_id: &str, server_id: &str) -> RepoResult<()> {
         let mut map = self.features.write().unwrap();
         for feature in map.values_mut() {

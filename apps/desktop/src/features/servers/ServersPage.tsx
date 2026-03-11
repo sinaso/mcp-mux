@@ -23,7 +23,8 @@ import {
 import { ServerActionMenu } from './ServerActionMenu';
 import type { ServerViewModel, ServerDefinition, InstalledServerState, InputDefinition } from '../../types/registry';
 import type { ServerFeature } from '@/lib/api/serverFeatures';
-import { listServerFeaturesByServer } from '@/lib/api/serverFeatures';
+import { listServerFeaturesByServer, setFeatureDisabled } from '@/lib/api/serverFeatures';
+import { Switch } from '@mcpmux/ui';
 import type { ConnectionStatus, ServerStatusResponse } from '@/lib/api/serverManager';
 import { getServerStatuses as fetchServerStatuses } from '@/lib/api/serverManager';
 import { useViewSpace, useNavigateTo } from '@/stores';
@@ -1202,16 +1203,31 @@ export function ServersPage() {
                               {features.filter(f => f.feature_type === 'tool').map(feature => (
                                 <div
                                   key={feature.id}
-                                  className="p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))]"
+                                  className={`p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))] flex items-start justify-between gap-2 ${feature.disabled ? 'opacity-50' : ''}`}
                                 >
-                                  <div className="font-medium text-sm">
-                                    {feature.display_name || feature.feature_name}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-sm">
+                                      {feature.display_name || feature.feature_name}
+                                    </div>
+                                    {feature.description && (
+                                      <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
+                                        {feature.description}
+                                      </p>
+                                    )}
                                   </div>
-                                  {feature.description && (
-                                    <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
-                                      {feature.description}
-                                    </p>
-                                  )}
+                                  <Switch
+                                    checked={!feature.disabled}
+                                    onCheckedChange={async (checked) => {
+                                      const newDisabled = !checked;
+                                      await setFeatureDisabled(feature.id, newDisabled);
+                                      setServerFeatures(prev => ({
+                                        ...prev,
+                                        [server.id]: (prev[server.id] || []).map(f =>
+                                          f.id === feature.id ? { ...f, disabled: newDisabled } : f
+                                        ),
+                                      }));
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>
@@ -1229,16 +1245,31 @@ export function ServersPage() {
                               {features.filter(f => f.feature_type === 'prompt').map(feature => (
                                 <div
                                   key={feature.id}
-                                  className="p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))]"
+                                  className={`p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))] flex items-start justify-between gap-2 ${feature.disabled ? 'opacity-50' : ''}`}
                                 >
-                                  <div className="font-medium text-sm">
-                                    {feature.display_name || feature.feature_name}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-sm">
+                                      {feature.display_name || feature.feature_name}
+                                    </div>
+                                    {feature.description && (
+                                      <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
+                                        {feature.description}
+                                      </p>
+                                    )}
                                   </div>
-                                  {feature.description && (
-                                    <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
-                                      {feature.description}
-                                    </p>
-                                  )}
+                                  <Switch
+                                    checked={!feature.disabled}
+                                    onCheckedChange={async (checked) => {
+                                      const newDisabled = !checked;
+                                      await setFeatureDisabled(feature.id, newDisabled);
+                                      setServerFeatures(prev => ({
+                                        ...prev,
+                                        [server.id]: (prev[server.id] || []).map(f =>
+                                          f.id === feature.id ? { ...f, disabled: newDisabled } : f
+                                        ),
+                                      }));
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>
@@ -1256,16 +1287,31 @@ export function ServersPage() {
                               {features.filter(f => f.feature_type === 'resource').map(feature => (
                                 <div
                                   key={feature.id}
-                                  className="p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))]"
+                                  className={`p-3 bg-[rgb(var(--card))] rounded-lg border border-[rgb(var(--border-subtle))] flex items-start justify-between gap-2 ${feature.disabled ? 'opacity-50' : ''}`}
                                 >
-                                  <div className="font-medium text-sm">
-                                    {feature.display_name || feature.feature_name}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-sm">
+                                      {feature.display_name || feature.feature_name}
+                                    </div>
+                                    {feature.description && (
+                                      <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
+                                        {feature.description}
+                                      </p>
+                                    )}
                                   </div>
-                                  {feature.description && (
-                                    <p className="text-xs text-[rgb(var(--muted))] mt-1 line-clamp-2">
-                                      {feature.description}
-                                    </p>
-                                  )}
+                                  <Switch
+                                    checked={!feature.disabled}
+                                    onCheckedChange={async (checked) => {
+                                      const newDisabled = !checked;
+                                      await setFeatureDisabled(feature.id, newDisabled);
+                                      setServerFeatures(prev => ({
+                                        ...prev,
+                                        [server.id]: (prev[server.id] || []).map(f =>
+                                          f.id === feature.id ? { ...f, disabled: newDisabled } : f
+                                        ),
+                                      }));
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>

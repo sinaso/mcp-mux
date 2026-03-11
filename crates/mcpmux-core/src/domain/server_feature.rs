@@ -81,6 +81,10 @@ pub struct ServerFeature {
 
     /// Whether this feature is currently available
     pub is_available: bool,
+
+    /// Whether this feature has been manually disabled by the user
+    #[serde(default)]
+    pub disabled: bool,
 }
 
 impl ServerFeature {
@@ -105,6 +109,7 @@ impl ServerFeature {
             discovered_at: now,
             last_seen_at: now,
             is_available: true,
+            disabled: false,
         }
     }
 

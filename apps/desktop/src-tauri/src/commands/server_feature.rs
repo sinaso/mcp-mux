@@ -22,6 +22,7 @@ pub struct ServerFeatureResponse {
     pub discovered_at: String,
     pub last_seen_at: String,
     pub is_available: bool,
+    pub disabled: bool,
 }
 
 impl From<ServerFeature> for ServerFeatureResponse {
@@ -38,6 +39,7 @@ impl From<ServerFeature> for ServerFeatureResponse {
             discovered_at: f.discovered_at.to_rfc3339(),
             last_seen_at: f.last_seen_at.to_rfc3339(),
             is_available: f.is_available,
+            disabled: f.disabled,
         }
     }
 }
@@ -128,6 +130,20 @@ pub async fn get_server_feature(
         .map_err(|e| e.to_string())?;
 
     Ok(feature.map(Into::into))
+}
+
+/// Set the disabled state of a feature.
+#[tauri::command]
+pub async fn set_feature_disabled(
+    id: String,
+    disabled: bool,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state
+        .server_feature_repository
+        .set_disabled(&id, disabled)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 /// Seed server features for E2E testing.

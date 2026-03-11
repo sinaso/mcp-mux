@@ -55,6 +55,7 @@ pub struct ServerFeature {
     pub discovered_at: DateTime<Utc>,
     pub last_seen_at: DateTime<Utc>,
     pub is_available: bool,
+    pub disabled: bool,
 }
 
 impl ServerFeature {
@@ -77,6 +78,7 @@ impl ServerFeature {
             discovered_at: now,
             last_seen_at: now,
             is_available: true,
+            disabled: false,
         }
     }
 
@@ -99,6 +101,7 @@ impl ServerFeature {
             discovered_at: now,
             last_seen_at: now,
             is_available: true,
+            disabled: false,
         }
     }
 
@@ -121,6 +124,7 @@ impl ServerFeature {
             discovered_at: now,
             last_seen_at: now,
             is_available: true,
+            disabled: false,
         }
     }
 
@@ -184,6 +188,9 @@ pub trait ServerFeatureRepository: Send + Sync {
         available_names: &[String],
     ) -> Result<()>;
 
+    /// Set the disabled state of a feature
+    async fn set_disabled(&self, id: &str, disabled: bool) -> Result<()>;
+
     /// Delete a feature
     async fn delete(&self, id: &str) -> Result<()>;
 
@@ -228,6 +235,7 @@ impl SqliteServerFeatureRepository {
             discovered_at: Self::parse_datetime(&row.get::<_, String>(8)?),
             last_seen_at: Self::parse_datetime(&row.get::<_, String>(9)?),
             is_available: row.get::<_, i32>(10)? == 1,
+            disabled: row.get::<_, i32>(11)? == 1,
         })
     }
 }
@@ -239,9 +247,9 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
         let conn = db.connection();
 
         let mut stmt = conn.prepare(
-            "SELECT id, space_id, server_id, feature_type, feature_name, 
-                    display_name, description, raw_json, discovered_at, 
-                    last_seen_at, is_available
+            "SELECT id, space_id, server_id, feature_type, feature_name,
+                    display_name, description, raw_json, discovered_at,
+                    last_seen_at, is_available, disabled
              FROM server_features
              WHERE space_id = ?
              ORDER BY server_id, feature_type, feature_name",
@@ -259,9 +267,9 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
         let conn = db.connection();
 
         let mut stmt = conn.prepare(
-            "SELECT id, space_id, server_id, feature_type, feature_name, 
-                    display_name, description, raw_json, discovered_at, 
-                    last_seen_at, is_available
+            "SELECT id, space_id, server_id, feature_type, feature_name,
+                    display_name, description, raw_json, discovered_at,
+                    last_seen_at, is_available, disabled
              FROM server_features
              WHERE space_id = ? AND server_id = ?
              ORDER BY feature_type, feature_name",
@@ -284,9 +292,9 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
         let conn = db.connection();
 
         let mut stmt = conn.prepare(
-            "SELECT id, space_id, server_id, feature_type, feature_name, 
-                    display_name, description, raw_json, discovered_at, 
-                    last_seen_at, is_available
+            "SELECT id, space_id, server_id, feature_type, feature_name,
+                    display_name, description, raw_json, discovered_at,
+                    last_seen_at, is_available, disabled
              FROM server_features
              WHERE space_id = ? AND server_id = ? AND feature_type = ?
              ORDER BY feature_name",
@@ -308,9 +316,9 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
 
         let result = conn
             .query_row(
-                "SELECT id, space_id, server_id, feature_type, feature_name, 
-                        display_name, description, raw_json, discovered_at, 
-                        last_seen_at, is_available
+                "SELECT id, space_id, server_id, feature_type, feature_name,
+                        display_name, description, raw_json, discovered_at,
+                        last_seen_at, is_available, disabled
                  FROM server_features
                  WHERE id = ?",
                 params![id],
@@ -333,9 +341,9 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
 
         let result = conn
             .query_row(
-                "SELECT id, space_id, server_id, feature_type, feature_name, 
-                        display_name, description, raw_json, discovered_at, 
-                        last_seen_at, is_available
+                "SELECT id, space_id, server_id, feature_type, feature_name,
+                        display_name, description, raw_json, discovered_at,
+                        last_seen_at, is_available, disabled
                  FROM server_features
                  WHERE space_id = ? AND server_id = ? AND feature_type = ? AND feature_name = ?",
                 params![space_id, server_id, feature_type.as_str(), name],
@@ -356,11 +364,11 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
             .map(|s| serde_json::to_string(s).unwrap_or_default());
 
         conn.execute(
-            "INSERT INTO server_features 
-                (id, space_id, server_id, feature_type, feature_name, 
-                 display_name, description, raw_json, discovered_at, 
-                 last_seen_at, is_available)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+            "INSERT INTO server_features
+                (id, space_id, server_id, feature_type, feature_name,
+                 display_name, description, raw_json, discovered_at,
+                 last_seen_at, is_available, disabled)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
              ON CONFLICT(space_id, server_id, feature_type, feature_name) DO UPDATE SET
                 display_name = COALESCE(?6, display_name),
                 description = COALESCE(?7, description),
@@ -379,6 +387,7 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
                 feature.discovered_at.to_rfc3339(),
                 feature.last_seen_at.to_rfc3339(),
                 if feature.is_available { 1 } else { 0 },
+                if feature.disabled { 1 } else { 0 },
             ],
         )?;
 
@@ -444,6 +453,18 @@ impl ServerFeatureRepository for SqliteServerFeatureRepository {
         Ok(())
     }
 
+    async fn set_disabled(&self, id: &str, disabled: bool) -> Result<()> {
+        let db = self.db.lock().await;
+        let conn = db.connection();
+
+        conn.execute(
+            "UPDATE server_features SET disabled = ? WHERE id = ?",
+            params![if disabled { 1 } else { 0 }, id],
+        )?;
+
+        Ok(())
+    }
+
     async fn delete(&self, id: &str) -> Result<()> {
         let db = self.db.lock().await;
         let conn = db.connection();
@@ -485,6 +506,7 @@ impl From<ServerFeature> for mcpmux_core::ServerFeature {
             discovered_at: f.discovered_at,
             last_seen_at: f.last_seen_at,
             is_available: f.is_available,
+            disabled: f.disabled,
         }
     }
 }
@@ -507,6 +529,7 @@ impl From<mcpmux_core::ServerFeature> for ServerFeature {
             discovered_at: f.discovered_at,
             last_seen_at: f.last_seen_at,
             is_available: f.is_available,
+            disabled: f.disabled,
         }
     }
 }
@@ -556,6 +579,10 @@ impl mcpmux_core::ServerFeatureRepository for SqliteServerFeatureRepository {
 
     async fn delete(&self, id: &uuid::Uuid) -> mcpmux_core::RepoResult<()> {
         ServerFeatureRepository::delete(self, &id.to_string()).await
+    }
+
+    async fn set_disabled(&self, id: &uuid::Uuid, disabled: bool) -> mcpmux_core::RepoResult<()> {
+        ServerFeatureRepository::set_disabled(self, &id.to_string(), disabled).await
     }
 
     async fn mark_unavailable(

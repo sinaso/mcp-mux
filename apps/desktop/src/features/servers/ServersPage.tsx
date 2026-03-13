@@ -261,6 +261,15 @@ export function ServersPage() {
     loadData();
   }, [viewSpace?.id]);
 
+  // Load features for connected servers so tool/prompt/resource counts show without expanding
+  useEffect(() => {
+    for (const [serverId, status] of Object.entries(serverStatuses)) {
+      if ((status.status === 'connected') && !serverFeatures[serverId] && !loadingFeatures.has(serverId)) {
+        loadFeaturesForServer(serverId);
+      }
+    }
+  }, [serverStatuses]);
+
   // Subscribe to gateway events for reactive updates (no polling!)
   useGatewayEvents((payload: GatewayChangedPayload) => {
     if (payload.action === 'started') {

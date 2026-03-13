@@ -482,6 +482,43 @@ pub fn run() {
                 });
                 info!("[Gateway] OAuth completion handler started");
 
+                // Start ServerAuthRequired handler - opens browser automatically when
+                // ConnectionService detects a mid-session token expiry and starts OAuth
+                {
+                    let sm_for_auth = server_manager_arc.clone();
+                    let mut domain_rx = gw_inner_state.read().await.subscribe_domain_events();
+
+                    tokio::spawn(async move {
+                        use mcpmux_core::DomainEvent;
+                        use mcpmux_gateway::ServerKey;
+
+                        info!("[AuthRequired Handler] Started listening for ServerAuthRequired events");
+
+                        loop {
+                            match domain_rx.recv().await {
+                                Ok(DomainEvent::ServerAuthRequired { space_id, server_id, auth_url }) => {
+                                    info!(
+                                        "[AuthRequired Handler] Received for {}/{}, opening browser",
+                                        server_id, auth_url
+                                    );
+                                    let key = ServerKey::new(space_id, &server_id);
+                                    sm_for_auth.set_authenticating(&key, auth_url.clone()).await;
+                                    sm_for_auth.open_browser(&auth_url);
+                                }
+                                Ok(_) => {} // Ignore other events
+                                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                                    warn!("[AuthRequired Handler] Lagged {} messages", n);
+                                }
+                                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                                    info!("[AuthRequired Handler] Channel closed, stopping");
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+                info!("[Gateway] ServerAuthRequired handler started");
+
                 // Start periodic refresh loop (every 60s for connected servers)
                 let _refresh_handle = server_manager_arc.clone().start_periodic_refresh();
                 info!("[Gateway] Periodic refresh service started");

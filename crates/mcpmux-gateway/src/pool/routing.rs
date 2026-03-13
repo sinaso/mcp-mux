@@ -423,10 +423,28 @@ impl RoutingService {
                                     }
                                 }
                             }
-                            other => {
+                            ConnectionResult::OAuthRequired { .. } => {
                                 warn!(
-                                    "[RoutingService] Auto-reconnect failed for {}: {:?}",
-                                    server_id, other
+                                    "[RoutingService] Re-authentication required for {}, browser opened",
+                                    server_id
+                                );
+                                self.log(
+                                    &space_id,
+                                    &server_id,
+                                    LogLevel::Warn,
+                                    format!(
+                                        "Re-authentication required for tool '{}' - browser opened for sign-in",
+                                        actual_tool_name
+                                    ),
+                                    None,
+                                )
+                                .await;
+                                Ok(result)
+                            }
+                            ConnectionResult::Failed { error } => {
+                                warn!(
+                                    "[RoutingService] Auto-reconnect failed for {}: {}",
+                                    server_id, error
                                 );
                                 self.log(
                                     &space_id,
@@ -436,7 +454,7 @@ impl RoutingService {
                                         "Auto-reconnect failed for tool '{}' - manual reconnection required",
                                         actual_tool_name
                                     ),
-                                    Some(serde_json::json!({ "reconnect_result": format!("{:?}", other) })),
+                                    Some(serde_json::json!({ "error": error })),
                                 )
                                 .await;
                                 Ok(result)
@@ -526,10 +544,17 @@ impl RoutingService {
                                     }
                                 }
                             }
-                            other => {
+                            ConnectionResult::OAuthRequired { .. } => {
                                 warn!(
-                                    "[RoutingService] Auto-reconnect failed for {}: {:?}",
-                                    server_id, other
+                                    "[RoutingService] Re-authentication required for {}, browser opened",
+                                    server_id
+                                );
+                                Ok(result)
+                            }
+                            ConnectionResult::Failed { error } => {
+                                warn!(
+                                    "[RoutingService] Auto-reconnect failed for {}: {}",
+                                    server_id, error
                                 );
                                 Ok(result)
                             }
@@ -648,10 +673,31 @@ impl RoutingService {
                                 }
                             }
                         }
-                        other => {
+                        ConnectionResult::OAuthRequired { .. } => {
                             warn!(
-                                "[RoutingService] Auto-reconnect failed for {}: {:?}",
-                                server_id, other
+                                "[RoutingService] Re-authentication required for {}, browser opened",
+                                server_id
+                            );
+                            self.log(
+                                &space_id,
+                                &server_id,
+                                LogLevel::Warn,
+                                format!(
+                                    "Re-authentication required for tool '{}' - browser opened, please sign in",
+                                    actual_tool_name
+                                ),
+                                None,
+                            )
+                            .await;
+                            Err(anyhow!(
+                                "Server '{}' requires re-authentication. Please complete sign-in in the browser and retry.",
+                                server_id
+                            ))
+                        }
+                        ConnectionResult::Failed { error } => {
+                            warn!(
+                                "[RoutingService] Auto-reconnect failed for {}: {}",
+                                server_id, error
                             );
                             self.log(
                                 &space_id,
@@ -661,7 +707,7 @@ impl RoutingService {
                                     "Auto-reconnect failed for tool '{}' - manual reconnection required",
                                     actual_tool_name
                                 ),
-                                Some(serde_json::json!({ "reconnect_result": format!("{:?}", other) })),
+                                Some(serde_json::json!({ "error": error })),
                             )
                             .await;
                             Err(anyhow!(
@@ -717,6 +763,10 @@ impl RoutingService {
             "invalid_token",
             "token expired",
             "access token",
+            // RMCP AuthClient error when token is expired and cannot be silently refreshed
+            "oauth authorization required",
+            "oauth authorization",
+            "auth error:",
         ];
         indicators.iter().any(|s| error_str.contains(s))
     }

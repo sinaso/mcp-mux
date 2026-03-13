@@ -35,6 +35,10 @@ fn is_auth_error(error_str: &str) -> bool {
         "invalid_token",
         "token expired",
         "access token",
+        // RMCP AuthClient error when token is expired and cannot be silently refreshed
+        "oauth authorization required",
+        "oauth authorization",
+        "auth error:",
     ];
     indicators.iter().any(|s| lower.contains(s))
 }
@@ -137,9 +141,13 @@ impl PoolService {
                         );
                         self.try_read_resource(space_id, server_id, uri).await
                     }
-                    _ => Err(anyhow::anyhow!(
-                        "Server '{}' auth error on read_resource. Auto-reconnect failed. Please disconnect and connect again.",
+                    ConnectionResult::OAuthRequired { .. } => Err(anyhow::anyhow!(
+                        "Server '{}' requires re-authentication. Please complete sign-in in the browser and retry.",
                         server_id
+                    )),
+                    ConnectionResult::Failed { error } => Err(anyhow::anyhow!(
+                        "Server '{}' auth error on read_resource. Auto-reconnect failed: {}",
+                        server_id, error
                     )),
                 }
             }
@@ -212,9 +220,13 @@ impl PoolService {
                         self.try_get_prompt(space_id, server_id, prompt_name, arguments)
                             .await
                     }
-                    _ => Err(anyhow::anyhow!(
-                        "Server '{}' auth error on get_prompt. Auto-reconnect failed. Please disconnect and connect again.",
+                    ConnectionResult::OAuthRequired { .. } => Err(anyhow::anyhow!(
+                        "Server '{}' requires re-authentication. Please complete sign-in in the browser and retry.",
                         server_id
+                    )),
+                    ConnectionResult::Failed { error } => Err(anyhow::anyhow!(
+                        "Server '{}' auth error on get_prompt. Auto-reconnect failed: {}",
+                        server_id, error
                     )),
                 }
             }

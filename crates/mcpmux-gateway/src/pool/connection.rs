@@ -11,7 +11,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Result;
-use mcpmux_core::{CredentialRepository, OutboundOAuthRepository, ServerLogManager};
+use mcpmux_core::{CredentialRepository, DomainEvent, OutboundOAuthRepository, ServerLogManager};
 use tracing::{debug, info, warn};
 use uuid::Uuid;
 
@@ -574,14 +574,138 @@ impl ConnectionService {
                     features,
                 }
             }
-            TransportConnectResult::OAuthRequired { .. } => {
-                // This shouldn't happen after successful OAuth
+            TransportConnectResult::OAuthRequired { server_url: oauth_url } => {
+                // Token is invalid/expired and the transport cannot use it.
+                // Try token refresh first; if that fails, start a full OAuth flow.
                 instance.mark_oauth_pending();
                 warn!(
-                    "[ConnectionService] Still requires OAuth after token exchange - token may be invalid"
+                    "[ConnectionService] Token invalid/expired for {}/{} - attempting re-authentication",
+                    space_id, server_id
                 );
-                ConnectionResult::OAuthRequired {
-                    auth_url: String::new(),
+
+                match self
+                    .oauth_manager
+                    .start_oauth_flow(
+                        self.credential_repo.clone(),
+                        self.backend_oauth_repo.clone(),
+                        space_id,
+                        server_id,
+                        &oauth_url,
+                    )
+                    .await
+                {
+                    Ok(OAuthInitResult::AlreadyAuthorized) => {
+                        // Token was successfully refreshed by the OAuth manager.
+                        // Retry the transport connection with the fresh token.
+                        info!(
+                            "[ConnectionService] Token refreshed for {}/{}, retrying connection",
+                            space_id, server_id
+                        );
+                        instance.mark_connecting();
+                        let retry_transport = TransportFactory::create(
+                            &config,
+                            space_id,
+                            server_id.to_string(),
+                            Arc::clone(&self.credential_repo),
+                            Arc::clone(&self.backend_oauth_repo),
+                            self.log_manager.clone(),
+                            self.connect_timeout,
+                            self.event_tx.clone(),
+                        );
+                        match retry_transport.connect().await {
+                            TransportConnectResult::Connected(client) => {
+                                let features = match feature_service
+                                    .discover_and_cache(
+                                        &space_id.to_string(),
+                                        server_id,
+                                        &client,
+                                    )
+                                    .await
+                                {
+                                    Ok(f) => f,
+                                    Err(e) => {
+                                        warn!(
+                                            "[ConnectionService] Feature discovery failed after token refresh: {}",
+                                            e
+                                        );
+                                        CachedFeatures::default()
+                                    }
+                                };
+                                let discovered_features = DiscoveredFeatures {
+                                    tools: features
+                                        .tools
+                                        .iter()
+                                        .map(|t| serde_json::to_value(t).unwrap_or_default())
+                                        .collect(),
+                                    prompts: features
+                                        .prompts
+                                        .iter()
+                                        .map(|p| serde_json::to_value(p).unwrap_or_default())
+                                        .collect(),
+                                    resources: features
+                                        .resources
+                                        .iter()
+                                        .map(|r| serde_json::to_value(r).unwrap_or_default())
+                                        .collect(),
+                                };
+                                let connection = match config.transport_type() {
+                                    TransportType::Stdio => {
+                                        McpClientConnection::Stdio { client }
+                                    }
+                                    TransportType::Http => {
+                                        McpClientConnection::Http { client }
+                                    }
+                                };
+                                instance.mark_connected(discovered_features, connection);
+                                info!(
+                                    "[ConnectionService] Reconnected {}/{} after token refresh - {} features",
+                                    space_id,
+                                    server_id,
+                                    features.total_count()
+                                );
+                                ConnectionResult::Connected {
+                                    reused: false,
+                                    features,
+                                }
+                            }
+                            _ => {
+                                let err = format!(
+                                    "Server '{}' still unreachable after token refresh",
+                                    server_id
+                                );
+                                instance.mark_failed(err.clone());
+                                ConnectionResult::Failed { error: err }
+                            }
+                        }
+                    }
+                    Ok(OAuthInitResult::Initiated { auth_url }) => {
+                        // Full OAuth re-authentication flow started.
+                        // Emit a domain event so the desktop app can open the browser.
+                        info!(
+                            "[ConnectionService] OAuth re-authentication flow initiated for {}/{}",
+                            space_id, server_id
+                        );
+                        if let Some(ref tx) = self.event_tx {
+                            let _ = tx.send(DomainEvent::ServerAuthRequired {
+                                space_id,
+                                server_id: server_id.to_string(),
+                                auth_url: auth_url.clone(),
+                            });
+                        }
+                        ConnectionResult::OAuthRequired { auth_url }
+                    }
+                    Ok(OAuthInitResult::NotSupported(reason)) => {
+                        let err =
+                            format!("OAuth not supported for '{}': {}", server_id, reason);
+                        instance.mark_failed(err.clone());
+                        ConnectionResult::Failed { error: err }
+                    }
+                    Err(e) => {
+                        let err =
+                            format!("Re-authentication failed for '{}': {}", server_id, e);
+                        instance.mark_failed(err.clone());
+                        ConnectionResult::Failed { error: err }
+                    }
                 }
             }
             TransportConnectResult::Failed(error) => {

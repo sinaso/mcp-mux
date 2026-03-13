@@ -356,6 +356,18 @@ pub enum DomainEvent {
 
     /// Backend server notified that its resources changed
     ResourcesChanged { space_id: Uuid, server_id: String },
+
+    /// Server requires OAuth re-authentication triggered mid-session
+    ///
+    /// Emitted when a connected server's token has expired and automatic
+    /// token refresh failed. The desktop app should open the browser to
+    /// `auth_url` automatically so the user can re-authenticate.
+    ServerAuthRequired {
+        space_id: Uuid,
+        server_id: String,
+        /// Authorization URL to open in the browser
+        auth_url: String,
+    },
 }
 
 // ============================================================================
@@ -395,6 +407,7 @@ impl DomainEvent {
             Self::ToolsChanged { .. } => "tools_changed",
             Self::PromptsChanged { .. } => "prompts_changed",
             Self::ResourcesChanged { .. } => "resources_changed",
+            Self::ServerAuthRequired { .. } => "server_auth_required",
         }
     }
 
@@ -450,7 +463,8 @@ impl DomainEvent {
             | Self::ClientGrantsUpdated { space_id, .. }
             | Self::ToolsChanged { space_id, .. }
             | Self::PromptsChanged { space_id, .. }
-            | Self::ResourcesChanged { space_id, .. } => Some(*space_id),
+            | Self::ResourcesChanged { space_id, .. }
+            | Self::ServerAuthRequired { space_id, .. } => Some(*space_id),
 
             Self::SpaceActivated { to_space_id, .. } => Some(*to_space_id),
 
@@ -477,7 +491,8 @@ impl DomainEvent {
             | Self::ServerFeaturesRefreshed { server_id, .. }
             | Self::ToolsChanged { server_id, .. }
             | Self::PromptsChanged { server_id, .. }
-            | Self::ResourcesChanged { server_id, .. } => Some(server_id),
+            | Self::ResourcesChanged { server_id, .. }
+            | Self::ServerAuthRequired { server_id, .. } => Some(server_id),
             _ => None,
         }
     }

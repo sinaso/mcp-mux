@@ -420,6 +420,20 @@ fn map_domain_event_to_ui(event: &DomainEvent) -> (&'static str, serde_json::Val
             }),
         ),
 
+        // Server requires OAuth re-authentication mid-session
+        DomainEvent::ServerAuthRequired {
+            space_id,
+            server_id,
+            auth_url,
+        } => (
+            "server-auth-required",
+            serde_json::json!({
+                "space_id": space_id,
+                "server_id": server_id,
+                "auth_url": auth_url,
+            }),
+        ),
+
         // MCP capability notifications (informational)
         DomainEvent::ToolsChanged {
             space_id,

@@ -15,7 +15,7 @@ use mcpmux_core::{
 };
 use oauth2::{basic::BasicTokenType, AccessToken, RefreshToken, TokenResponse};
 use rmcp::transport::auth::{AuthError, CredentialStore, OAuthTokenResponse, StoredCredentials};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 /// Database-backed credential store for rmcp OAuth integration.
@@ -67,6 +67,101 @@ impl DatabaseCredentialStore {
             refresh_cred.map(|r| r.value.clone()),
             expires_in,
         )
+    }
+
+    /// Proactively refresh an expired access token using the stored refresh token.
+    ///
+    /// Works around a bug in rmcp 1.1.1 where `refresh_token()` omits the RFC 8707
+    /// `resource` parameter. By doing the refresh here — in code we own — we can
+    /// include `resource=server_url`, which strict OAuth servers (e.g. Atlassian)
+    /// require to match the parameter that was bound to the refresh token at issuance.
+    ///
+    /// Called from `load()` when we detect an expired access token with a valid
+    /// refresh token, so RMCP always receives fresh credentials and never falls into
+    /// its own broken refresh path.
+    async fn proactive_refresh(
+        &self,
+        refresh_token: &str,
+        reg: &OutboundOAuthRegistration,
+    ) -> Option<StoredCredentials> {
+        let token_endpoint = reg.metadata.as_ref()?.token_endpoint.as_str();
+        let client_id = &reg.client_id;
+
+        info!(
+            "[CredentialStore] Proactively refreshing token for {}/{} via {}",
+            self.space_id, self.server_id, token_endpoint
+        );
+
+        let mut params = vec![
+            ("grant_type", "refresh_token"),
+            ("refresh_token", refresh_token),
+            ("client_id", client_id.as_str()),
+            ("resource", self.server_url.as_str()),
+        ];
+
+        // Include client_secret only for confidential clients (stored in metadata additional_fields)
+        let client_secret = reg
+            .metadata
+            .as_ref()
+            .and_then(|m| m.additional_fields.get("client_secret"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        if let Some(ref secret) = client_secret {
+            params.push(("client_secret", secret.as_str()));
+        }
+
+        let response = reqwest::Client::new()
+            .post(token_endpoint)
+            .form(&params)
+            .send()
+            .await
+            .ok()?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            warn!(
+                "[CredentialStore] Proactive refresh failed for {}/{}: HTTP {} - {}",
+                self.space_id, self.server_id, status, body
+            );
+            return None;
+        }
+
+        let json: serde_json::Value = response.json().await.ok()?;
+
+        let access_token = json.get("access_token")?.as_str()?.to_string();
+        let new_refresh_token = json
+            .get("refresh_token")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        let expires_in = json
+            .get("expires_in")
+            .and_then(|v| v.as_u64())
+            .map(std::time::Duration::from_secs);
+
+        let token_response =
+            build_token_response(access_token, new_refresh_token.or(Some(refresh_token.to_string())), expires_in);
+
+        let new_creds = StoredCredentials {
+            client_id: client_id.clone(),
+            token_response: Some(token_response),
+            granted_scopes: Vec::new(),
+            token_received_at: Some(now_epoch_secs()),
+        };
+
+        // Persist immediately so all future loads see the new token
+        if let Err(e) = self.save_to_database(&new_creds).await {
+            warn!(
+                "[CredentialStore] Failed to persist refreshed token for {}/{}: {}",
+                self.space_id, self.server_id, e
+            );
+        }
+
+        info!(
+            "[CredentialStore] Proactive refresh succeeded for {}/{}",
+            self.space_id, self.server_id
+        );
+        Some(new_creds)
     }
 
     /// Save SDK's StoredCredentials to our typed credential rows.
@@ -217,6 +312,21 @@ impl CredentialStore for DatabaseCredentialStore {
                     "[CredentialStore] Loaded registration + token for {}/{}, client_id={}",
                     self.space_id, self.server_id, reg.client_id
                 );
+
+                // If access token is expired and we have a refresh token + token endpoint,
+                // proactively refresh now (with RFC 8707 `resource` param) so RMCP always
+                // receives a valid token and never hits its own broken refresh path.
+                let is_expired = access.expires_at.map(|exp| exp <= Utc::now()).unwrap_or(false);
+                if is_expired {
+                    if let Some(refresh) = refresh_cred.as_ref() {
+                        if reg.metadata.as_ref().map(|m| !m.token_endpoint.is_empty()).unwrap_or(false) {
+                            if let Some(refreshed) = self.proactive_refresh(&refresh.value, &reg).await {
+                                return Ok(Some(refreshed));
+                            }
+                        }
+                    }
+                }
+
                 let token_response = Self::build_token_response(access, refresh_cred.as_ref());
                 Some(StoredCredentials {
                     client_id: reg.client_id,

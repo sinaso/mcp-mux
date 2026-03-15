@@ -54,8 +54,7 @@
           "description": "Server description"
         },
         "icon": {
-          "type": "string",
-          "description": "Icon URL or emoji"
+          "$ref": "#/$defs/icon"
         },
         "metadata": {
           "$ref": "#/$defs/metadata"
@@ -85,13 +84,37 @@
           "description": "Server description"
         },
         "icon": {
-          "type": "string",
-          "description": "Icon URL or emoji"
+          "$ref": "#/$defs/icon"
         },
         "metadata": {
           "$ref": "#/$defs/metadata"
         }
       }
+    },
+    "icon": {
+      "description": "Icon URL or emoji. Use a plain string for a single icon, or an object with 'light' and 'dark' keys for theme-specific icons.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Icon URL or emoji used for all themes"
+        },
+        {
+          "type": "object",
+          "description": "Separate icons for light and dark themes",
+          "required": ["light", "dark"],
+          "properties": {
+            "light": {
+              "type": "string",
+              "description": "Icon URL or emoji for light theme"
+            },
+            "dark": {
+              "type": "string",
+              "description": "Icon URL or emoji for dark theme"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "metadata": {
       "type": "object",

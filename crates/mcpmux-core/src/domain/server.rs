@@ -2,6 +2,35 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+/// Server icon — either a single URL/emoji or separate light/dark variants.
+///
+/// Serializes as a plain string for the single-icon case (backward compatible),
+/// or as `{ "light": "...", "dark": "..." }` for themed variants.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ServerIcon {
+    /// Single icon used for all themes (URL or emoji)
+    Single(String),
+    /// Separate icons for light and dark themes
+    Themed { light: String, dark: String },
+}
+
+impl ServerIcon {
+    /// Resolve to a concrete string for the given theme ("light" or "dark").
+    pub fn resolve(&self, dark: bool) -> &str {
+        match self {
+            ServerIcon::Single(s) => s,
+            ServerIcon::Themed { light, dark: d } => {
+                if dark {
+                    d
+                } else {
+                    light
+                }
+            }
+        }
+    }
+}
+
 /// The canonical internal representation for ALL servers (Unified Runtime Model).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerDefinition {
@@ -20,8 +49,8 @@ pub struct ServerDefinition {
     /// Authentication configuration
     pub auth: Option<AuthConfig>,
 
-    /// Optional icon (emoji or URL)
-    pub icon: Option<String>,
+    /// Optional icon (emoji or URL, or light/dark pair)
+    pub icon: Option<ServerIcon>,
 
     /// Self-contained transport configuration (includes inputs!)
     pub transport: TransportConfig,

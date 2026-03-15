@@ -10,6 +10,7 @@
 import { Loader2, AlertCircle, Clock, Wifi, WifiOff } from "lucide-react";
 import type { ServerViewModel } from "../../types/registry";
 import type { ConnectionStatus } from "@/lib/api/serverManager";
+import { ServerIcon } from "@/components/ServerIcon";
 
 interface ServerCardProps {
   server: ServerViewModel;
@@ -218,11 +219,7 @@ export function ServerCard({
         <div className="flex items-center gap-4 min-w-0 flex-1">
           {/* Icon */}
           <div className="w-10 h-10 rounded-lg bg-[rgb(var(--surface-dim))] flex items-center justify-center flex-shrink-0 text-xl">
-            {server.icon?.startsWith('http') ? (
-              <img src={server.icon} alt="" className="w-7 h-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.append(document.createTextNode('📦')); }} />
-            ) : (
-              server.icon || "🔌"
-            )}
+            <ServerIcon icon={server.icon} className="w-7 h-7 object-contain" fallback="🔌" />
           </div>
 
           {/* Name & Status */}

@@ -2,6 +2,9 @@
  * Registry types for MCP server browsing and installation.
  */
 
+/** Server icon — either a plain URL/emoji string or separate light/dark variants */
+export type ServerIcon = string | { light: string; dark: string };
+
 /** Input definition from registry */
 export interface InputDefinition {
   id: string;
@@ -57,7 +60,7 @@ export interface ServerDefinition {
   description: string | null;
   alias: string | null;
   auth: AuthConfig | null;
-  icon: string | null;
+  icon: ServerIcon | null;
   transport: TransportConfig;
   categories: string[];
   publisher: PublisherInfo | null;

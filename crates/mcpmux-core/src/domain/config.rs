@@ -1,6 +1,6 @@
 use crate::domain::server::{
-    AuthConfig, HostingType, InputDefinition, PublisherInfo, ServerDefinition, ServerSource,
-    TransportConfig, TransportMetadata,
+    AuthConfig, HostingType, InputDefinition, PublisherInfo, ServerDefinition, ServerIcon,
+    ServerSource, TransportConfig, TransportMetadata,
 };
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -37,7 +37,7 @@ pub struct UserServerEntry {
     // --- Common Metadata ---
     pub name: Option<String>,
     pub description: Option<String>,
-    pub icon: Option<String>,
+    pub icon: Option<ServerIcon>,
     pub alias: Option<String>,
     pub auth: Option<AuthConfig>,
 

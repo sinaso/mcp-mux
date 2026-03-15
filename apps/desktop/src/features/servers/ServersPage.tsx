@@ -36,6 +36,7 @@ import { ServerLogViewer } from '@/components/ServerLogViewer';
 import { ConfigEditorModal } from '@/components/ConfigEditorModal';
 import { ServerDefinitionModal } from '@/components/ServerDefinitionModal';
 import { SourceBadge } from '@/components/SourceBadge';
+import { ServerIcon } from '@/components/ServerIcon';
 
 // Helper to merge definitions with states (same as registryStore)
 function mergeDefinitionsWithStates(
@@ -954,11 +955,7 @@ export function ServersPage() {
                       )}
                       
                       <div className="text-3xl flex items-center justify-center">
-                        {server.icon?.startsWith('http') ? (
-                          <img src={server.icon} alt="" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.append(document.createTextNode('📦')); }} />
-                        ) : (
-                          server.icon || '📦'
-                        )}
+                        <ServerIcon icon={server.icon} className="w-8 h-8 object-contain" />
                       </div>
                       <div>
                         <div className="font-medium">{server.name}</div>

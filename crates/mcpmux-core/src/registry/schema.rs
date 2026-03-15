@@ -8,6 +8,7 @@
 //! - **Array**: `{ "servers": [{ "id": "io.github.xxx/yyy", ... }] }`
 
 use super::types::*;
+use crate::ServerIcon;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
@@ -127,8 +128,8 @@ pub struct RegistryServer {
     /// Long description / about section (markdown supported)
     pub about: Option<String>,
 
-    /// Icon URL or emoji
-    pub icon: Option<String>,
+    /// Icon URL or emoji, or light/dark pair
+    pub icon: Option<ServerIcon>,
 
     /// Schema version for this server definition
     #[serde(default = "default_version")]

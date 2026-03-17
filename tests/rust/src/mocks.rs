@@ -424,38 +424,6 @@ impl FeatureSetRepository for MockFeatureSetRepository {
             .collect())
     }
 
-    async fn get_server_all(
-        &self,
-        space_id: &str,
-        server_id: &str,
-    ) -> RepoResult<Option<FeatureSet>> {
-        Ok(self
-            .sets
-            .read()
-            .unwrap()
-            .values()
-            .find(|s| {
-                s.space_id.as_deref() == Some(space_id)
-                    && s.feature_set_type == FeatureSetType::ServerAll
-                    && s.server_id.as_deref() == Some(server_id)
-            })
-            .cloned())
-    }
-
-    async fn ensure_server_all(
-        &self,
-        space_id: &str,
-        server_id: &str,
-        server_name: &str,
-    ) -> RepoResult<FeatureSet> {
-        if let Some(existing) = self.get_server_all(space_id, server_id).await? {
-            return Ok(existing);
-        }
-        let set = FeatureSet::new_server_all(space_id, server_id, server_name);
-        self.create(&set).await?;
-        Ok(set)
-    }
-
     async fn get_default_for_space(&self, space_id: &str) -> RepoResult<Option<FeatureSet>> {
         Ok(self
             .sets
@@ -487,13 +455,6 @@ impl FeatureSetRepository for MockFeatureSetRepository {
         }
         if self.get_default_for_space(space_id).await?.is_none() {
             self.create(&FeatureSet::new_default(space_id)).await?;
-        }
-        Ok(())
-    }
-
-    async fn delete_server_all(&self, space_id: &str, server_id: &str) -> RepoResult<()> {
-        if let Some(set) = self.get_server_all(space_id, server_id).await? {
-            self.delete(&set.id).await?;
         }
         Ok(())
     }

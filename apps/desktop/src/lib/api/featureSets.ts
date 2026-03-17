@@ -113,17 +113,6 @@ export async function getBuiltinFeatureSets(spaceId: string): Promise<FeatureSet
 }
 
 /**
- * Ensure a server-all featureset exists for a server in a space.
- */
-export async function ensureServerAllFeatureSet(
-  spaceId: string,
-  serverId: string,
-  serverName: string
-): Promise<FeatureSet> {
-  return invoke('ensure_server_all_feature_set', { spaceId, serverId, serverName });
-}
-
-/**
  * Get a feature set with its members.
  */
 export async function getFeatureSetWithMembers(id: string): Promise<FeatureSet | null> {

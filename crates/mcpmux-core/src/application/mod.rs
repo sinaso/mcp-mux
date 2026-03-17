@@ -134,7 +134,6 @@ impl ApplicationServicesBuilder {
             server: self.installed_server_repo.map(|r| {
                 ServerAppService::new(
                     r,
-                    self.feature_set_repo.clone(),
                     self.server_feature_repo.clone(),
                     self.credential_repo.clone(),
                     sender.clone(),

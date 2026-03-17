@@ -317,41 +317,6 @@ impl FeatureSetRepository for SqliteFeatureSetRepository {
         Ok(feature_sets)
     }
 
-    async fn get_server_all(&self, space_id: &str, server_id: &str) -> Result<Option<FeatureSet>> {
-        let db = self.db.lock().await;
-        let conn = db.connection();
-
-        let result = conn
-            .query_row(
-                "SELECT id, name, description, icon, space_id, feature_set_type, 
-                        server_id, is_builtin, is_deleted, created_at, updated_at 
-                 FROM feature_sets 
-                 WHERE space_id = ? AND server_id = ? AND feature_set_type = 'server-all' AND is_deleted = 0",
-                params![space_id, server_id],
-                Self::row_to_feature_set,
-            )
-            .optional()?;
-
-        Ok(result)
-    }
-
-    async fn ensure_server_all(
-        &self,
-        space_id: &str,
-        server_id: &str,
-        server_name: &str,
-    ) -> Result<FeatureSet> {
-        // Check if it already exists
-        if let Some(existing) = self.get_server_all(space_id, server_id).await? {
-            return Ok(existing);
-        }
-
-        // Create new server-all featureset
-        let fs = FeatureSet::new_server_all(space_id, server_id, server_name);
-        self.create(&fs).await?;
-        Ok(fs)
-    }
-
     async fn get_default_for_space(&self, space_id: &str) -> Result<Option<FeatureSet>> {
         let db = self.db.lock().await;
         let conn = db.connection();
@@ -386,21 +351,6 @@ impl FeatureSetRepository for SqliteFeatureSetRepository {
             .optional()?;
 
         Ok(result)
-    }
-
-    async fn delete_server_all(&self, space_id: &str, server_id: &str) -> Result<()> {
-        let db = self.db.lock().await;
-        let conn = db.connection();
-
-        // Hard delete server-all feature set for this server (used during uninstall)
-        // Unlike regular delete(), this allows deleting builtin server-all feature sets
-        conn.execute(
-            "DELETE FROM feature_sets 
-             WHERE space_id = ? AND server_id = ? AND feature_set_type = 'server-all'",
-            params![space_id, server_id],
-        )?;
-
-        Ok(())
     }
 
     async fn ensure_builtin_for_space(&self, space_id: &str) -> Result<()> {
@@ -538,24 +488,4 @@ mod tests {
         assert!(result.is_err());
     }
 
-    #[tokio::test]
-    async fn test_server_all_featureset() {
-        let db = Arc::new(Mutex::new(Database::open_in_memory().unwrap()));
-        let repo = SqliteFeatureSetRepository::new(db);
-
-        // Ensure creates new (use default space from migration)
-        let fs = repo
-            .ensure_server_all(DEFAULT_SPACE_ID, "github-mcp", "GitHub")
-            .await
-            .unwrap();
-        assert_eq!(fs.feature_set_type, FeatureSetType::ServerAll);
-        assert_eq!(fs.server_id, Some("github-mcp".to_string()));
-
-        // Ensure returns existing
-        let fs2 = repo
-            .ensure_server_all(DEFAULT_SPACE_ID, "github-mcp", "GitHub")
-            .await
-            .unwrap();
-        assert_eq!(fs.id, fs2.id);
-    }
 }

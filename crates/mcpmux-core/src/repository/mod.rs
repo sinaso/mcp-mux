@@ -163,21 +163,6 @@ pub trait FeatureSetRepository: Send + Sync {
     /// Get builtin feature sets for a space
     async fn list_builtin(&self, space_id: &str) -> RepoResult<Vec<FeatureSet>>;
 
-    /// Get server-all featureset for a server in a space
-    async fn get_server_all(
-        &self,
-        space_id: &str,
-        server_id: &str,
-    ) -> RepoResult<Option<FeatureSet>>;
-
-    /// Create server-all featureset if it doesn't exist
-    async fn ensure_server_all(
-        &self,
-        space_id: &str,
-        server_id: &str,
-        server_name: &str,
-    ) -> RepoResult<FeatureSet>;
-
     /// Get the "Default" featureset for a space
     async fn get_default_for_space(&self, space_id: &str) -> RepoResult<Option<FeatureSet>>;
 
@@ -186,9 +171,6 @@ pub trait FeatureSetRepository: Send + Sync {
 
     /// Ensure builtin feature sets exist for a space (All + Default)
     async fn ensure_builtin_for_space(&self, space_id: &str) -> RepoResult<()>;
-
-    /// Delete server-all feature set for a server (used when uninstalling)
-    async fn delete_server_all(&self, space_id: &str, server_id: &str) -> RepoResult<()>;
 
     /// Add an individual feature as a member of a feature set
     async fn add_feature_member(

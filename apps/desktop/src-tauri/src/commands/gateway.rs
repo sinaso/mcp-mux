@@ -819,9 +819,6 @@ pub async fn connect_server(
                 features.total_count()
             );
 
-            // Ensure server-all featureset exists
-            ensure_server_featureset(&app_state, &server_id, &server_definition, &installed).await;
-
             Ok(())
         }
         ConnectionResult::Failed { error } => {
@@ -843,25 +840,6 @@ pub async fn connect_server(
                 auth_url
             ))
         }
-    }
-}
-
-/// Ensure server-all featureset exists after connection
-///
-/// Note: Server state is now managed by ServerManager/PoolService, not GatewayState
-async fn ensure_server_featureset(
-    app_state: &AppState,
-    server_id: &str,
-    registry_entry: &mcpmux_core::ServerDefinition,
-    installed: &mcpmux_core::InstalledServer,
-) {
-    let space_id_str = installed.space_id.clone();
-    if let Err(e) = app_state
-        .feature_set_repository
-        .ensure_server_all(&space_id_str, server_id, &registry_entry.name)
-        .await
-    {
-        warn!("[Gateway] Failed to create server-all featureset: {}", e);
     }
 }
 
@@ -1085,7 +1063,7 @@ pub async fn connect_all_enabled_servers(
         errors: vec![],
     };
 
-    for (server_info, transport, server_definition, installed) in servers_to_connect {
+    for (server_info, transport, _server_definition, _installed) in servers_to_connect {
         let space_uuid = server_info.space_id;
         let server_id = server_info.server_id.clone();
 
@@ -1105,9 +1083,6 @@ pub async fn connect_all_enabled_servers(
                     features.total_count()
                 );
 
-                // Ensure server-all featureset exists
-                ensure_server_featureset(&app_state, &server_id, &server_definition, &installed)
-                    .await;
             }
             ConnectionResult::OAuthRequired { auth_url: _ } => {
                 result.oauth_required += 1;

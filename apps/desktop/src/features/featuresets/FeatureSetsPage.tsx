@@ -178,6 +178,9 @@ export function FeatureSetsPage() {
       // Hide implicit custom sets
       if (fs.name.endsWith(' - Custom')) return false;
 
+      // Hide server-specific auto-managed feature sets
+      if (fs.feature_set_type === 'server-all') return false;
+
       // Apply search filter
       if (!searchQuery) return true;
       const query = searchQuery.toLowerCase();

@@ -202,64 +202,6 @@ async fn test_ensure_builtin_idempotent() {
     assert_eq!(builtin.len(), 2);
 }
 
-#[tokio::test]
-async fn test_server_all_feature_set() {
-    let test_db = TestDatabase::new();
-    let db = Arc::new(Mutex::new(test_db.db));
-    let feature_repo = SqliteFeatureSetRepository::new(Arc::clone(&db));
-    let space_repo = SqliteSpaceRepository::new(db);
-
-    let space = fixtures::test_space("Test Space");
-    SpaceRepository::create(&space_repo, &space).await.unwrap();
-
-    // Create server-all feature set
-    let server_all = FeatureSetRepository::ensure_server_all(
-        &feature_repo,
-        &space.id.to_string(),
-        "my-server",
-        "My Server",
-    )
-    .await
-    .expect("Failed to ensure server-all");
-
-    assert_eq!(server_all.feature_set_type, FeatureSetType::ServerAll);
-    assert_eq!(server_all.server_id, Some("my-server".to_string()));
-
-    // Get by server_id
-    let found =
-        FeatureSetRepository::get_server_all(&feature_repo, &space.id.to_string(), "my-server")
-            .await
-            .expect("Failed to get server-all");
-    assert!(found.is_some());
-    assert_eq!(found.unwrap().id, server_all.id);
-}
-
-#[tokio::test]
-async fn test_delete_server_all() {
-    let test_db = TestDatabase::new();
-    let db = Arc::new(Mutex::new(test_db.db));
-    let feature_repo = SqliteFeatureSetRepository::new(Arc::clone(&db));
-    let space_repo = SqliteSpaceRepository::new(db);
-
-    let space = fixtures::test_space("Test Space");
-    SpaceRepository::create(&space_repo, &space).await.unwrap();
-
-    // Create then delete
-    FeatureSetRepository::ensure_server_all(&feature_repo, &space.id.to_string(), "srv", "Srv")
-        .await
-        .unwrap();
-
-    FeatureSetRepository::delete_server_all(&feature_repo, &space.id.to_string(), "srv")
-        .await
-        .expect("Failed to delete server-all");
-
-    // Should be gone
-    let found = FeatureSetRepository::get_server_all(&feature_repo, &space.id.to_string(), "srv")
-        .await
-        .unwrap();
-    assert!(found.is_none());
-}
-
 // =============================================================================
 // Feature Members Tests
 // =============================================================================

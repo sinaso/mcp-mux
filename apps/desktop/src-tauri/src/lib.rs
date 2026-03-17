@@ -288,7 +288,6 @@ pub fn run() {
 
             let server_app_service = mcpmux_core::ServerAppService::new(
                 app_state.installed_server_repository.clone(),
-                Some(app_state.feature_set_repository.clone()),
                 Some(app_state.server_feature_repository_core.clone()),
                 Some(app_state.credential_repository.clone()),
                 event_sender,
@@ -802,7 +801,6 @@ pub fn run() {
             commands::update_feature_set,
             commands::delete_feature_set,
             commands::get_builtin_feature_sets,
-            commands::ensure_server_all_feature_set,
             commands::add_feature_set_member,
             commands::remove_feature_set_member,
             commands::set_feature_set_members,

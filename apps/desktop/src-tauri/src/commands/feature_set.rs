@@ -109,7 +109,6 @@ pub async fn list_feature_sets(
 }
 
 /// List feature sets for a specific space.
-/// Filters out server-all feature sets for servers that are not enabled.
 #[tauri::command]
 pub async fn list_feature_sets_by_space(
     space_id: String,
@@ -121,36 +120,7 @@ pub async fn list_feature_sets_by_space(
         .await
         .map_err(|e| e.to_string())?;
 
-    // Get enabled server IDs to filter server-all feature sets
-    let installed_servers = state
-        .installed_server_repository
-        .list_for_space(&space_id)
-        .await
-        .map_err(|e: anyhow::Error| e.to_string())?;
-
-    let enabled_server_ids: std::collections::HashSet<String> = installed_servers
-        .into_iter()
-        .filter(|s| s.enabled)
-        .map(|s| s.server_id)
-        .collect();
-
-    // Filter out server-all feature sets for servers that are not enabled
-    let filtered = feature_sets
-        .into_iter()
-        .filter(|fs| {
-            if fs.feature_set_type == mcpmux_core::FeatureSetType::ServerAll {
-                // Only include if server is enabled
-                fs.server_id
-                    .as_ref()
-                    .is_some_and(|sid| enabled_server_ids.contains(sid))
-            } else {
-                true
-            }
-        })
-        .map(Into::into)
-        .collect();
-
-    Ok(filtered)
+    Ok(feature_sets.into_iter().map(Into::into).collect())
 }
 
 /// Get a feature set by ID (without members).
@@ -281,23 +251,6 @@ pub async fn get_builtin_feature_sets(
     Ok(feature_sets.into_iter().map(Into::into).collect())
 }
 
-/// Ensure server-all featureset exists for a server in a space.
-#[tauri::command]
-pub async fn ensure_server_all_feature_set(
-    space_id: String,
-    server_id: String,
-    server_name: String,
-    state: State<'_, AppState>,
-) -> Result<FeatureSetResponse, String> {
-    let feature_set = state
-        .feature_set_repository
-        .ensure_server_all(&space_id, &server_id, &server_name)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    Ok(feature_set.into())
-}
-
 /// Update a feature set (name, description, icon).
 #[tauri::command]
 pub async fn update_feature_set(
@@ -404,7 +357,7 @@ pub async fn add_feature_set_member(
             let target_type = target_fs.feature_set_type.as_str();
             if target_type == "all" || target_type == "default" {
                 return Err(format!(
-                    "Cannot include '{}' type feature sets in other feature sets. Only 'custom' and 'server-all' types can be included.",
+                    "Cannot include '{}' type feature sets in other feature sets. Only 'custom' types can be included.",
                     target_type
                 ));
             }

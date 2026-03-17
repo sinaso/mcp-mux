@@ -207,7 +207,7 @@ export function FeatureSetsPage() {
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold">Feature Sets</h1>
                 {viewSpace && (
-                  <span className="px-2 py-0.5 rounded-full bg-[rgb(var(--surface-elevated))] text-xs border border-[rgb(var(--border))] whitespace-nowrap">
+                  <span className="px-2 py-0.5 rounded-md bg-[rgb(var(--surface-elevated))] text-xs border border-[rgb(var(--border))] whitespace-nowrap">
                     {viewSpace.icon || '📁'} {viewSpace.name}
                   </span>
                 )}
@@ -310,7 +310,7 @@ export function FeatureSetsPage() {
                           <h3 className="font-semibold text-lg truncate mb-1.5 flex items-center gap-2">
                             {fs.name}
                           </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
                             isBuiltin 
                               ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
                               : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'

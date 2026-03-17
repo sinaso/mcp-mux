@@ -293,7 +293,7 @@ export function FeatureSetPanel({ featureSet, spaceId, onClose, onDelete, onUpda
                 {featureSet.name}
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium border ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium border ${
                   isDefault 
                     ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800'
                     : isCustom
@@ -403,7 +403,7 @@ export function FeatureSetPanel({ featureSet, spaceId, onClose, onDelete, onUpda
                     <span className="font-semibold text-base">Included Features</span>
                     {/* Show count badge only for configurable feature sets */}
                     {isConfigurable && (
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                      <span className={`text-xs px-2.5 py-1 rounded-md font-bold ${
                         getActualMemberCount() > 0
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700'
                           : 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700'
@@ -489,7 +489,7 @@ export function FeatureSetPanel({ featureSet, spaceId, onClose, onDelete, onUpda
                                     <span className="font-medium text-sm truncate">{group.serverId}</span>
                                     {/* Show count badge only for configurable feature sets */}
                                     {isConfigurable && (
-                                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${
+                                      <span className={`text-xs px-2 py-0.5 rounded-md font-bold flex-shrink-0 ${
                                         selectedCount === 0
                                           ? 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400'
                                           : allSelected
@@ -567,7 +567,7 @@ export function FeatureSetPanel({ featureSet, spaceId, onClose, onDelete, onUpda
                                           <span className="font-medium text-sm truncate">
                                             {feature.display_name || feature.feature_name}
                                           </span>
-                                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${getTypeColor(feature.feature_type)}`}>
+                                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${getTypeColor(feature.feature_type)}`}>
                                             {feature.feature_type}
                                           </span>
                                         </div>

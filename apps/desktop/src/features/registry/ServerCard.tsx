@@ -25,25 +25,25 @@ export function ServerCard({
     switch (authType) {
       case 'none':
         return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-[rgb(var(--success))]/20 text-[rgb(var(--success))]">
+          <span className="px-2 py-0.5 text-xs rounded-md bg-[rgb(var(--success))]/20 text-[rgb(var(--success))]">
             No Auth
           </span>
         );
       case 'api_key':
         return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-[rgb(var(--warning))]/20 text-[rgb(var(--warning))]">
+          <span className="px-2 py-0.5 text-xs rounded-md bg-[rgb(var(--warning))]/20 text-[rgb(var(--warning))]">
             API Key
           </span>
         );
       case 'optional_api_key':
         return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-[rgb(var(--warning))]/30 text-[rgb(var(--warning))]">
+          <span className="px-2 py-0.5 text-xs rounded-md bg-[rgb(var(--warning))]/30 text-[rgb(var(--warning))]">
             API Key (Optional)
           </span>
         );
       case 'oauth':
         return (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-[rgb(var(--info))]/20 text-[rgb(var(--info))]">
+          <span className="px-2 py-0.5 text-xs rounded-md bg-[rgb(var(--info))]/20 text-[rgb(var(--info))]">
             OAuth
           </span>
         );
@@ -61,7 +61,7 @@ export function ServerCard({
     }[hostingType];
 
     return (
-      <span className={`px-2 py-0.5 text-xs rounded-full ${config.bg} ${config.text}`}>
+      <span className={`px-2 py-0.5 text-xs rounded-md ${config.bg} ${config.text}`}>
         {config.icon} {config.label}
       </span>
     );
@@ -84,7 +84,7 @@ export function ServerCard({
           const config = badgeConfig[badge];
           if (!config) return null;
           return (
-            <span key={badge} className={`px-2 py-0.5 text-xs rounded-full ${config.bg} ${config.text}`}>
+            <span key={badge} className={`px-2 py-0.5 text-xs rounded-md ${config.bg} ${config.text}`}>
               {config.label}
             </span>
           );
@@ -136,7 +136,7 @@ export function ServerCard({
         {getTransportBadge()}
         {getAuthBadge()}
         {server.capabilities?.read_only_mode && (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
+          <span className="px-2 py-0.5 text-xs rounded-md bg-green-500/20 text-green-600 dark:text-green-400">
             🛡️ Read-Only
           </span>
         )}
@@ -148,7 +148,7 @@ export function ServerCard({
           {server.categories.slice(0, 3).map((cat) => (
             <span
               key={cat}
-              className="px-2 py-0.5 text-xs rounded bg-[rgb(var(--surface-hover))] text-[rgb(var(--muted))]"
+              className="px-2 py-0.5 text-xs rounded-md bg-[rgb(var(--surface-hover))] text-[rgb(var(--muted))]"
             >
               {cat}
             </span>

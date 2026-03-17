@@ -54,27 +54,27 @@ export function ServerDetailModal({
               {server.badges && server.badges.length > 0 && (
                 <div className="flex gap-1.5">
                   {server.badges.includes('official') && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                    <span className="px-2 py-0.5 text-xs rounded-md bg-blue-500/20 text-blue-600 dark:text-blue-400">
                       Official
                     </span>
                   )}
                   {server.badges.includes('verified') && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
+                    <span className="px-2 py-0.5 text-xs rounded-md bg-green-500/20 text-green-600 dark:text-green-400">
                       ✓ Verified
                     </span>
                   )}
                   {server.badges.includes('featured') && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                    <span className="px-2 py-0.5 text-xs rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-400">
                       ⭐ Featured
                     </span>
                   )}
                   {server.badges.includes('sponsored') && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                    <span className="px-2 py-0.5 text-xs rounded-md bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
                       Sponsored
                     </span>
                   )}
                   {server.badges.includes('popular') && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-600 dark:text-red-400">
+                    <span className="px-2 py-0.5 text-xs rounded-md bg-red-500/20 text-red-600 dark:text-red-400">
                       🔥 Popular
                     </span>
                   )}
@@ -252,7 +252,7 @@ export function ServerDetailModal({
                   <div className="flex items-center gap-2">
                     <span className="text-[rgb(var(--muted))]">Difficulty:</span>
                     <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
+                      className={`px-2 py-0.5 text-xs rounded-md ${
                         server.installation.difficulty === 'easy'
                           ? 'bg-green-500/20 text-green-600 dark:text-green-400'
                           : server.installation.difficulty === 'moderate'

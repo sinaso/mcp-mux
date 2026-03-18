@@ -10,8 +10,6 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
-  ToggleLeft,
-  ToggleRight,
   Settings,
   Trash2,
   Check,
@@ -20,7 +18,7 @@ import {
   Shield,
   Save,
 } from 'lucide-react';
-import { Button, useToast, ToastContainer, useConfirm } from '@mcpmux/ui';
+import { Button, useToast, ToastContainer, useConfirm, ToggleSwitch } from '@mcpmux/ui';
 import type { FeatureSet, AddMemberInput } from '@/lib/api/featureSets';
 import { setFeatureSetMembers } from '@/lib/api/featureSets';
 import type { ServerFeature } from '@/lib/api/serverFeatures';
@@ -519,22 +517,12 @@ export function FeatureSetPanel({ featureSet, spaceId, onClose, onDelete, onUpda
                               </div>
                               
                               {isConfigurable && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleAllInServer(group.serverId);
-                                  }}
-                                  className={`p-1.5 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0`}
+                                <ToggleSwitch
+                                  checked={allSelected}
+                                  indeterminate={someSelected && !allSelected}
+                                  onChange={() => toggleAllInServer(group.serverId)}
                                   title={allSelected ? "Disable All" : "Enable All"}
-                                >
-                                  {allSelected ? (
-                                    <ToggleRight className="h-5 w-5 text-primary-500" />
-                                  ) : someSelected ? (
-                                    <ToggleLeft className="h-5 w-5 text-amber-500" />
-                                  ) : (
-                                    <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
-                                  )}
-                                </button>
+                                />
                               )}
                             </div>
                             

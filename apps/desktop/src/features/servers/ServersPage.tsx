@@ -19,12 +19,13 @@ import {
   Clock,
   FileJson,
   FolderOpen,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import { ServerActionMenu } from './ServerActionMenu';
 import type { ServerViewModel, ServerDefinition, InstalledServerState, InputDefinition } from '../../types/registry';
 import type { ServerFeature } from '@/lib/api/serverFeatures';
 import { listServerFeaturesByServer, setFeatureDisabled } from '@/lib/api/serverFeatures';
-import { Switch } from '@mcpmux/ui';
 import type { ConnectionStatus, ServerStatusResponse } from '@/lib/api/serverManager';
 import { getServerStatuses as fetchServerStatuses } from '@/lib/api/serverManager';
 import { useViewSpace, useNavigateTo } from '@/stores';
@@ -1221,10 +1222,10 @@ export function ServersPage() {
                                       </p>
                                     )}
                                   </div>
-                                  <Switch
-                                    checked={!feature.disabled}
-                                    onCheckedChange={async (checked) => {
-                                      const newDisabled = !checked;
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      const newDisabled = !feature.disabled;
                                       await setFeatureDisabled(feature.id, newDisabled);
                                       setServerFeatures(prev => ({
                                         ...prev,
@@ -1233,7 +1234,15 @@ export function ServersPage() {
                                         ),
                                       }));
                                     }}
-                                  />
+                                    className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0"
+                                    title={feature.disabled ? 'Enable' : 'Disable'}
+                                  >
+                                    {!feature.disabled ? (
+                                      <ToggleRight className="h-5 w-5 text-primary-500" />
+                                    ) : (
+                                      <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                                    )}
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -1263,10 +1272,10 @@ export function ServersPage() {
                                       </p>
                                     )}
                                   </div>
-                                  <Switch
-                                    checked={!feature.disabled}
-                                    onCheckedChange={async (checked) => {
-                                      const newDisabled = !checked;
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      const newDisabled = !feature.disabled;
                                       await setFeatureDisabled(feature.id, newDisabled);
                                       setServerFeatures(prev => ({
                                         ...prev,
@@ -1275,7 +1284,15 @@ export function ServersPage() {
                                         ),
                                       }));
                                     }}
-                                  />
+                                    className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0"
+                                    title={feature.disabled ? 'Enable' : 'Disable'}
+                                  >
+                                    {!feature.disabled ? (
+                                      <ToggleRight className="h-5 w-5 text-primary-500" />
+                                    ) : (
+                                      <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                                    )}
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -1305,10 +1322,10 @@ export function ServersPage() {
                                       </p>
                                     )}
                                   </div>
-                                  <Switch
-                                    checked={!feature.disabled}
-                                    onCheckedChange={async (checked) => {
-                                      const newDisabled = !checked;
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      const newDisabled = !feature.disabled;
                                       await setFeatureDisabled(feature.id, newDisabled);
                                       setServerFeatures(prev => ({
                                         ...prev,
@@ -1317,7 +1334,15 @@ export function ServersPage() {
                                         ),
                                       }));
                                     }}
-                                  />
+                                    className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0"
+                                    title={feature.disabled ? 'Enable' : 'Disable'}
+                                  >
+                                    {!feature.disabled ? (
+                                      <ToggleRight className="h-5 w-5 text-primary-500" />
+                                    ) : (
+                                      <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                                    )}
+                                  </button>
                                 </div>
                               ))}
                             </div>

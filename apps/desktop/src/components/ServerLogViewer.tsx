@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-import { X, Download, Trash2, RefreshCw, ChevronDown } from 'lucide-react';
-import { useToast, ToastContainer, useConfirm } from '@mcpmux/ui';
+import { X, Download, Trash2, RefreshCw } from 'lucide-react';
+import { useToast, ToastContainer, useConfirm, Select } from '@mcpmux/ui';
 import { getServerLogs, clearServerLogs, getServerLogFile, type ServerLogEntry } from '@/lib/api/logs';
 
 interface ServerLogViewerProps {
@@ -151,21 +151,14 @@ export function ServerLogViewer({ serverId, serverName, onClose }: ServerLogView
           </div>
           <div className="flex items-center gap-2">
             {/* Level Filter */}
-            <div className="relative">
-              <select
-                value={levelFilter}
-                onChange={(e) => setLevelFilter(e.target.value as LogLevel | 'all')}
-                className="appearance-none bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-              >
-                <option value="all">All Levels</option>
-                {LOG_LEVELS.map(level => (
-                  <option key={level} value={level}>
-                    {level.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-            </div>
+            <Select
+              value={levelFilter}
+              onChange={(v) => setLevelFilter(v as LogLevel | 'all')}
+              options={[
+                { value: 'all', label: 'All Levels' },
+                ...LOG_LEVELS.map((level) => ({ value: level, label: level.toUpperCase() })),
+              ]}
+            />
             
             {/* Refresh with auto-refresh toggle */}
             <div className="flex items-center gap-1">

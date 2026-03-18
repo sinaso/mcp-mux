@@ -5,8 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { useToast, ToastContainer } from '@mcpmux/ui';
+import { useToast, ToastContainer, Select } from '@mcpmux/ui';
 import { useRegistryStore } from '../../stores/registryStore';
 import { ServerCard } from './ServerCard';
 import { ServerDetailModal } from './ServerDetailModal';
@@ -199,20 +198,11 @@ export function RegistryPage() {
           {uiConfig && uiConfig.sort_options.length > 0 && (
             <div className="ml-auto flex items-center gap-2">
               <span className="text-sm text-[rgb(var(--muted))]">Sort:</span>
-              <div className="relative">
-                <select
-                  value={activeSort}
-                  onChange={(e) => setSort(e.target.value)}
-                  className="appearance-none bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                >
-                  {uiConfig.sort_options.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-              </div>
+              <Select
+                value={activeSort}
+                onChange={setSort}
+                options={uiConfig.sort_options.map((opt) => ({ value: opt.id, label: opt.label }))}
+              />
             </div>
           )}
 
@@ -338,26 +328,15 @@ interface FilterDropdownProps {
 }
 
 function FilterDropdown({ filter, value, onChange }: FilterDropdownProps) {
-  const isActive = value && value !== 'all';
-
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`appearance-none bg-[rgb(var(--surface-hover))] border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer ${
-          isActive
-            ? 'border-[rgb(var(--primary))] text-[rgb(var(--foreground))]'
-            : 'border-[rgb(var(--border-subtle))] text-[rgb(var(--muted))]'
-        }`}
-      >
-        {filter.options.map((opt) => (
-          <option key={opt.id} value={opt.id}>
-            {opt.icon ? `${opt.icon} ${opt.label}` : opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-    </div>
+    <Select
+      value={value}
+      onChange={onChange}
+      isActive={!!(value && value !== 'all')}
+      options={filter.options.map((opt) => ({
+        value: opt.id,
+        label: opt.icon ? `${opt.icon} ${opt.label}` : opt.label,
+      }))}
+    />
   );
 }

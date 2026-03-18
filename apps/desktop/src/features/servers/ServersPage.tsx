@@ -23,6 +23,7 @@ import {
   ToggleRight,
 } from 'lucide-react';
 import { ServerActionMenu } from './ServerActionMenu';
+import { Select } from '@mcpmux/ui';
 import type { ServerViewModel, ServerDefinition, InstalledServerState, InputDefinition } from '../../types/registry';
 import type { ServerFeature } from '@/lib/api/serverFeatures';
 import { listServerFeaturesByServer, setFeatureDisabled } from '@/lib/api/serverFeatures';
@@ -1421,22 +1422,15 @@ export function ServersPage() {
                       );
                     case 'select':
                       return (
-                        <div className="relative">
-                          <select
-                            value={currentValue}
-                            onChange={(e) => handleChange(e.target.value)}
-                            className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                            data-testid={`config-input-${input.id}`}
-                          >
-                            <option value="">{input.placeholder || `Select ${input.label.toLowerCase()}...`}</option>
-                            {(input.options ?? []).map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-                        </div>
+                        <Select
+                          value={currentValue}
+                          onChange={handleChange}
+                          options={[
+                            { value: '', label: input.placeholder || `Select ${input.label.toLowerCase()}...` },
+                            ...(input.options ?? []),
+                          ]}
+                          data-testid={`config-input-${input.id}`}
+                        />
                       );
                     case 'file_path':
                       return (

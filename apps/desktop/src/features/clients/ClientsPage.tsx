@@ -31,6 +31,7 @@ import {
   useToast,
   ToastContainer,
   useConfirm,
+  Select,
 } from '@mcpmux/ui';
 import type { OAuthClient, UpdateClientRequest } from '@/lib/api/gateway';
 import { listOAuthClients, updateOAuthClient, deleteOAuthClient } from '@/lib/api/gateway';
@@ -763,20 +764,11 @@ export default function ClientsPage() {
                       <label className="block text-xs font-medium mb-1.5 text-[rgb(var(--muted))]">
                         Connection Mode
                       </label>
-                      <div className="relative">
-                        <select
-                          value={editMode}
-                          onChange={(e) => setEditMode(e.target.value)}
-                          className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                        >
-                          {CONNECTION_MODES.map((mode) => (
-                            <option key={mode.value} value={mode.value}>
-                              {mode.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-                      </div>
+                      <Select
+                        value={editMode}
+                        onChange={setEditMode}
+                        options={CONNECTION_MODES}
+                      />
                     </div>
 
                     {/* Locked Space Selection */}
@@ -785,21 +777,17 @@ export default function ClientsPage() {
                         <label className="block text-xs font-medium mb-1.5 text-[rgb(var(--muted))]">
                           Locked Workspace
                         </label>
-                        <div className="relative">
-                          <select
-                            value={editLockedSpaceId}
-                            onChange={(e) => setEditLockedSpaceId(e.target.value)}
-                            className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                          >
-                            <option value="">Select a workspace...</option>
-                            {spaces.map((space) => (
-                              <option key={space.id} value={space.id}>
-                                {space.icon || '📁'} {space.name}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-                        </div>
+                        <Select
+                          value={editLockedSpaceId}
+                          onChange={setEditLockedSpaceId}
+                          options={[
+                            { value: '', label: 'Select a workspace...' },
+                            ...spaces.map((space) => ({
+                              value: space.id,
+                              label: `${space.icon || '📁'} ${space.name}`,
+                            })),
+                          ]}
+                        />
                       </div>
                     )}
 

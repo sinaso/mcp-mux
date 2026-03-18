@@ -14,6 +14,8 @@ export { Button } from './components/common/Button';
 export { Input } from './components/common/Input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent } from './components/common/Card';
 export { Switch } from './components/common/Switch';
+export { Select } from './components/common/Select';
+export type { SelectOption, SelectProps } from './components/common/Select';
 export { Toast, ToastContainer } from './components/common/Toast';
 export type { ToastProps, ToastType, ToastAction } from './components/common/Toast';
 export { ConfirmDialog, useConfirm } from './components/common/ConfirmDialog';

@@ -12,7 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import { listen } from '@tauri-apps/api/event';
-import { Download, Check, X, AlertCircle, Loader2, Info, ChevronDown } from 'lucide-react';
+import { Download, Check, X, AlertCircle, Loader2, Info } from 'lucide-react';
 import {
   Button,
   Card,
@@ -20,6 +20,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  Select,
 } from '@mcpmux/ui';
 import { listSpaces, type Space } from '@/lib/api/spaces';
 import {
@@ -283,21 +284,15 @@ export function ServerInstallModal() {
               Install to space
             </label>
             {spaces.length > 0 ? (
-              <div className="relative">
-                <select
-                  value={selectedSpaceId || ''}
-                  onChange={(e) => setSelectedSpaceId(e.target.value || null)}
-                  className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                  data-testid="install-modal-space-select"
-                >
-                  {spaces.map((space) => (
-                    <option key={space.id} value={space.id}>
-                      {space.icon ? `${space.icon} ${space.name}` : space.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-              </div>
+              <Select
+                value={selectedSpaceId || ''}
+                onChange={(v) => setSelectedSpaceId(v || null)}
+                options={spaces.map((space) => ({
+                  value: space.id,
+                  label: space.icon ? `${space.icon} ${space.name}` : space.name,
+                }))}
+                data-testid="install-modal-space-select"
+              />
             ) : (
               <p className="text-sm text-[rgb(var(--muted))]">
                 No spaces available. Create a space first.

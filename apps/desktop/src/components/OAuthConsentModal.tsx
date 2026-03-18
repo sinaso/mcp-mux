@@ -13,8 +13,8 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, emit } from '@tauri-apps/api/event';
-import { Check, X, AlertCircle, Loader2, Globe, Lock, ChevronDown } from 'lucide-react';
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@mcpmux/ui';
+import { Check, X, AlertCircle, Loader2, Globe, Lock } from 'lucide-react';
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Select } from '@mcpmux/ui';
 import { listSpaces, type Space } from '@/lib/api/spaces';
 import { useNavigateTo, useSetPendingClientId } from '@/stores';
 import { resolveKnownClientKey } from '@/lib/clientIcons';
@@ -487,21 +487,17 @@ export function OAuthConsentModal() {
             {/* Space Selector (only when locked) */}
             {connectionMode === 'locked' && spaces.length > 0 && (
               <div className="mt-3">
-                <div className="relative">
-                  <select
-                    value={lockedSpaceId || ''}
-                    onChange={(e) => setLockedSpaceId(e.target.value || null)}
-                    className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
-                  >
-                    <option value="">Select a space to lock to...</option>
-                    {spaces.map((space) => (
-                      <option key={space.id} value={space.id}>
-                        {space.icon ? `${space.icon} ${space.name}` : space.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
-                </div>
+                <Select
+                  value={lockedSpaceId || ''}
+                  onChange={(v) => setLockedSpaceId(v || null)}
+                  options={[
+                    { value: '', label: 'Select a space to lock to...' },
+                    ...spaces.map((space) => ({
+                      value: space.id,
+                      label: space.icon ? `${space.icon} ${space.name}` : space.name,
+                    })),
+                  ]}
+                />
               </div>
             )}
           </div>

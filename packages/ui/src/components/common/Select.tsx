@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
@@ -29,33 +30,58 @@ export function Select({
   'data-testid': testId,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((o) => o.value === value);
   const active = isActive ?? (!!value && value !== options[0]?.value);
 
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      minWidth: rect.width,
+      zIndex: 9999,
+    });
+  }, []);
+
+  const open = useCallback(() => {
+    updatePosition();
+    setIsOpen(true);
+  }, [updatePosition]);
+
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
+      if (
+        triggerRef.current?.contains(e.target as Node) ||
+        dropdownRef.current?.contains(e.target as Node)
+      ) return;
+      setIsOpen(false);
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsOpen(false);
     };
+    const handleScroll = () => setIsOpen(false);
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, true);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScroll, true);
     };
-  }, []);
+  }, [isOpen]);
 
   return (
-    <div ref={ref} className={cn('relative', className)}>
+    <div ref={triggerRef} className={cn('relative', className)}>
       <button
         type="button"
-        onClick={() => !disabled && setIsOpen((v) => !v)}
+        onClick={() => !disabled && (isOpen ? setIsOpen(false) : open())}
         disabled={disabled}
         data-testid={testId}
         className={cn(
@@ -70,8 +96,12 @@ export function Select({
       </button>
       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
 
-      {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-full min-w-max py-1 bg-[rgb(var(--surface-elevated))] border border-[rgb(var(--border))] rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="py-1 bg-[rgb(var(--surface-elevated))] border border-[rgb(var(--border))] rounded-lg shadow-lg animate-in fade-in slide-in-from-top-1 duration-150"
+        >
           {options.map((option) => (
             <button
               key={option.value}
@@ -88,7 +118,8 @@ export function Select({
               )}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

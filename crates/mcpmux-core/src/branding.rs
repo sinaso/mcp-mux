@@ -1,7 +1,7 @@
 //! Centralized branding constants
 //!
 //! All product naming comes from this module.
-//! Generated from branding.toml at build time.
+//! Generated from app.toml at build time.
 //!
 //! # Usage
 //!

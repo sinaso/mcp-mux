@@ -1,6 +1,6 @@
-//! Build script that generates branding constants from branding.toml
+//! Build script that generates branding constants from app.toml
 //!
-//! This reads the workspace-level branding.toml and generates Rust constants
+//! This reads the workspace-level app.toml and generates Rust constants
 //! that are included at compile time.
 
 use std::env;
@@ -8,21 +8,21 @@ use std::fs;
 use std::path::Path;
 
 fn main() {
-    // Re-run if branding.toml changes
-    println!("cargo:rerun-if-changed=../../branding.toml");
+    // Re-run if app.toml changes
+    println!("cargo:rerun-if-changed=../../app.toml");
 
-    // Find branding.toml relative to this crate (2 levels up to workspace root)
+    // Find app.toml relative to this crate (2 levels up to workspace root)
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let workspace_root = Path::new(&manifest_dir).parent().unwrap().parent().unwrap();
-    let branding_path = workspace_root.join("branding.toml");
+    let branding_path = workspace_root.join("app.toml");
 
     if !branding_path.exists() {
-        // Generate defaults if branding.toml doesn't exist
+        // Generate defaults if app.toml doesn't exist
         generate_defaults();
         return;
     }
 
-    let content = fs::read_to_string(&branding_path).expect("Failed to read branding.toml");
+    let content = fs::read_to_string(&branding_path).expect("Failed to read app.toml");
 
     // Simple TOML parsing without external dependency
     let display_name = extract_toml_string(&content, "display_name").unwrap_or("McpMux");
@@ -37,6 +37,9 @@ fn main() {
     let github_org = extract_toml_string(&content, "github_org").unwrap_or("mcpmux");
     let npm_scope = extract_toml_string(&content, "npm_scope").unwrap_or("@mcpmux");
 
+    // Compile-time config
+    let registry_url = extract_toml_string(&content, "registry_url").unwrap_or("");
+
     // OAuth branding fields (RFC 7591 DCR metadata)
     let oauth_logo_uri = extract_toml_string(&content, "logo_uri").unwrap_or("");
     let oauth_client_uri = extract_toml_string(&content, "client_uri").unwrap_or("");
@@ -48,7 +51,7 @@ fn main() {
     let rust_path = Path::new(&out_dir).join("branding_generated.rs");
 
     let rust_code = format!(
-        r#"// Auto-generated branding constants from branding.toml
+        r#"// Auto-generated branding constants from app.toml
 // DO NOT EDIT - regenerate with `cargo build`
 
 /// User-facing display name
@@ -92,6 +95,10 @@ pub const OAUTH_TOS_URI: &str = {oauth_tos_uri:?};
 
 /// OAuth DCR privacy policy URI (RFC 7591)
 pub const OAUTH_POLICY_URI: &str = {oauth_policy_uri:?};
+
+/// Registry API base URL (from app.toml [config] registry_url)
+/// Empty string means fall back to the hardcoded default.
+pub const REGISTRY_URL: &str = {registry_url:?};
 "#,
         display_name = display_name,
         identifier = identifier,
@@ -107,18 +114,19 @@ pub const OAUTH_POLICY_URI: &str = {oauth_policy_uri:?};
         oauth_client_uri = oauth_client_uri,
         oauth_tos_uri = oauth_tos_uri,
         oauth_policy_uri = oauth_policy_uri,
+        registry_url = registry_url,
     );
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");
 }
 
-/// Generate default constants when branding.toml doesn't exist
+/// Generate default constants when app.toml doesn't exist
 fn generate_defaults() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let rust_path = Path::new(&out_dir).join("branding_generated.rs");
 
-    let rust_code = r#"// Auto-generated branding constants (defaults - no branding.toml found)
-// Create branding.toml in workspace root to customize
+    let rust_code = r#"// Auto-generated branding constants (defaults - no app.toml found)
+// Create app.toml in workspace root to customize
 
 pub const DISPLAY_NAME: &str = "McpMux";
 pub const IDENTIFIER: &str = "com.mcpmux.app";
@@ -134,6 +142,7 @@ pub const OAUTH_LOGO_URI: &str = "";
 pub const OAUTH_CLIENT_URI: &str = "";
 pub const OAUTH_TOS_URI: &str = "";
 pub const OAUTH_POLICY_URI: &str = "";
+pub const REGISTRY_URL: &str = "";
 "#;
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");

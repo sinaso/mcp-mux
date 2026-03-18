@@ -1,5 +1,5 @@
-# Branding Configuration
-# Single source of truth for all product naming
+# App Configuration
+# Single source of truth for branding and compile-time settings
 #
 
 [branding]
@@ -40,3 +40,7 @@ logo_uri = "https://mcpmux.com/favicon.svg"
 client_uri = "https://mcpmux.com"
 tos_uri = "https://mcpmux.com/docs/"
 policy_uri = "https://mcpmux.com/docs/"
+
+[config]
+# Registry API base URL (overridable via MCPMUX_REGISTRY_URL env var at runtime)
+registry_url = "https://api.mcpmux.com"

@@ -4,7 +4,7 @@
 //!
 //! ## Modules
 //!
-//! - `branding` - Centralized branding constants (generated from branding.toml)
+//! - `branding` - Centralized branding constants (generated from app.toml)
 //! - `domain` - Core entities (Space, InstalledServer, FeatureSet, Client)
 //! - `registry` - MCP server registry schema and types
 //! - `repository` - Data access traits

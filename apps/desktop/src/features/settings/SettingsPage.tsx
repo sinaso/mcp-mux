@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardContent,
   Button,
-  Switch,
   useToast,
   ToastContainer,
   Select,
@@ -24,6 +23,8 @@ import {
   XCircle,
   Trash2,
   BarChart3,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import { useAppStore, useTheme, useAnalyticsEnabled } from '@/stores';
 import { UpdateChecker } from './UpdateChecker';
@@ -199,15 +200,18 @@ export function SettingsPage() {
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={startupSettings.autoLaunch}
-                  onCheckedChange={(checked) => {
-                    console.log('Auto-launch toggled:', checked);
-                    updateStartupSetting('autoLaunch', checked);
-                  }}
+                <button
+                  onClick={() => !savingSettings && updateStartupSetting('autoLaunch', !startupSettings.autoLaunch)}
                   disabled={savingSettings}
+                  className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="auto-launch-switch"
-                />
+                >
+                  {startupSettings.autoLaunch ? (
+                    <ToggleRight className="h-5 w-5 text-primary-500" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                  )}
+                </button>
               </div>
 
               <div className="flex items-center justify-between gap-4">
@@ -220,15 +224,18 @@ export function SettingsPage() {
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={startupSettings.startMinimized}
-                  onCheckedChange={(checked) => {
-                    console.log('Start minimized toggled:', checked);
-                    updateStartupSetting('startMinimized', checked);
-                  }}
+                <button
+                  onClick={() => !(savingSettings || !startupSettings.autoLaunch) && updateStartupSetting('startMinimized', !startupSettings.startMinimized)}
                   disabled={savingSettings || !startupSettings.autoLaunch}
+                  className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="start-minimized-switch"
-                />
+                >
+                  {startupSettings.startMinimized ? (
+                    <ToggleRight className="h-5 w-5 text-primary-500" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                  )}
+                </button>
               </div>
 
               <div className="flex items-center justify-between gap-4">
@@ -241,15 +248,18 @@ export function SettingsPage() {
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={startupSettings.closeToTray}
-                  onCheckedChange={(checked) => {
-                    console.log('Close to tray toggled:', checked);
-                    updateStartupSetting('closeToTray', checked);
-                  }}
+                <button
+                  onClick={() => !savingSettings && updateStartupSetting('closeToTray', !startupSettings.closeToTray)}
                   disabled={savingSettings}
+                  className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="close-to-tray-switch"
-                />
+                >
+                  {startupSettings.closeToTray ? (
+                    <ToggleRight className="h-5 w-5 text-primary-500" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+                  )}
+                </button>
               </div>
 
               {savingSettings && (
@@ -329,11 +339,17 @@ export function SettingsPage() {
                 </p>
               </div>
             </div>
-            <Switch
-              checked={analyticsEnabled}
-              onCheckedChange={setAnalyticsEnabled}
+            <button
+              onClick={() => setAnalyticsEnabled(!analyticsEnabled)}
+              className="p-1 rounded-md transition-colors hover:bg-[rgb(var(--background))] flex-shrink-0"
               data-testid="analytics-switch"
-            />
+            >
+              {analyticsEnabled ? (
+                <ToggleRight className="h-5 w-5 text-primary-500" />
+              ) : (
+                <ToggleLeft className="h-5 w-5 text-[rgb(var(--muted))]" />
+              )}
+            </button>
           </div>
         </CardContent>
       </Card>

@@ -199,17 +199,20 @@ export function RegistryPage() {
           {uiConfig && uiConfig.sort_options.length > 0 && (
             <div className="ml-auto flex items-center gap-2">
               <span className="text-sm text-[rgb(var(--muted))]">Sort:</span>
-              <select
-                value={activeSort}
-                onChange={(e) => setSort(e.target.value)}
-                className="bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50"
-              >
-                {uiConfig.sort_options.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={activeSort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="appearance-none bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
+                >
+                  {uiConfig.sort_options.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
+              </div>
             </div>
           )}
 

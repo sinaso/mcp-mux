@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, emit } from '@tauri-apps/api/event';
-import { Check, X, AlertCircle, Loader2, Globe, Lock } from 'lucide-react';
+import { Check, X, AlertCircle, Loader2, Globe, Lock, ChevronDown } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@mcpmux/ui';
 import { listSpaces, type Space } from '@/lib/api/spaces';
 import { useNavigateTo, useSetPendingClientId } from '@/stores';
@@ -487,18 +487,21 @@ export function OAuthConsentModal() {
             {/* Space Selector (only when locked) */}
             {connectionMode === 'locked' && spaces.length > 0 && (
               <div className="mt-3">
-                <select
-                  value={lockedSpaceId || ''}
-                  onChange={(e) => setLockedSpaceId(e.target.value || null)}
-                  className="focus:ring-primary-500/20 w-full rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-3 py-2 text-[rgb(var(--foreground))] focus:outline-none focus:ring-2"
-                >
-                  <option value="">Select a space to lock to...</option>
-                  {spaces.map((space) => (
-                    <option key={space.id} value={space.id}>
-                      {space.icon ? `${space.icon} ${space.name}` : space.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={lockedSpaceId || ''}
+                    onChange={(e) => setLockedSpaceId(e.target.value || null)}
+                    className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
+                  >
+                    <option value="">Select a space to lock to...</option>
+                    {spaces.map((space) => (
+                      <option key={space.id} value={space.id}>
+                        {space.icon ? `${space.icon} ${space.name}` : space.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
+                </div>
               </div>
             )}
           </div>

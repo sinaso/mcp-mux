@@ -23,6 +23,7 @@ import {
   XCircle,
   Trash2,
   BarChart3,
+  ChevronDown,
 } from 'lucide-react';
 import { useAppStore, useTheme, useAnalyticsEnabled } from '@/stores';
 import { UpdateChecker } from './UpdateChecker';
@@ -381,20 +382,23 @@ export function SettingsPage() {
                     </p>
                   </div>
                 </div>
-                <select
-                  value={logRetentionDays}
-                  onChange={(e) => handleRetentionChange(Number(e.target.value))}
-                  disabled={savingRetention}
-                  className="px-3 py-1.5 text-sm border border-[rgb(var(--border))] rounded-lg bg-[rgb(var(--surface))] text-[rgb(var(--foreground))]"
-                  data-testid="log-retention-select"
-                >
-                  <option value={7}>7 days</option>
-                  <option value={14}>14 days</option>
-                  <option value={30}>30 days</option>
-                  <option value={60}>60 days</option>
-                  <option value={90}>90 days</option>
-                  <option value={0}>Keep forever</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={logRetentionDays}
+                    onChange={(e) => handleRetentionChange(Number(e.target.value))}
+                    disabled={savingRetention}
+                    className="appearance-none bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid="log-retention-select"
+                  >
+                    <option value={7}>7 days</option>
+                    <option value={14}>14 days</option>
+                    <option value={30}>30 days</option>
+                    <option value={60}>60 days</option>
+                    <option value={90}>90 days</option>
+                    <option value={0}>Keep forever</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
+                </div>
               </div>
             </div>
             <p className="text-xs text-[rgb(var(--muted))]">

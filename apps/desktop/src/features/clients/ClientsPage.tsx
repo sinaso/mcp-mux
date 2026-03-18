@@ -763,17 +763,20 @@ export default function ClientsPage() {
                       <label className="block text-xs font-medium mb-1.5 text-[rgb(var(--muted))]">
                         Connection Mode
                       </label>
-                      <select
-                        value={editMode}
-                        onChange={(e) => setEditMode(e.target.value)}
-                        className="w-full px-3 py-2 text-sm bg-[rgb(var(--surface))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      >
-                        {CONNECTION_MODES.map((mode) => (
-                          <option key={mode.value} value={mode.value}>
-                            {mode.label}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={editMode}
+                          onChange={(e) => setEditMode(e.target.value)}
+                          className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
+                        >
+                          {CONNECTION_MODES.map((mode) => (
+                            <option key={mode.value} value={mode.value}>
+                              {mode.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
+                      </div>
                     </div>
 
                     {/* Locked Space Selection */}
@@ -782,18 +785,21 @@ export default function ClientsPage() {
                         <label className="block text-xs font-medium mb-1.5 text-[rgb(var(--muted))]">
                           Locked Workspace
                         </label>
-                        <select
-                          value={editLockedSpaceId}
-                          onChange={(e) => setEditLockedSpaceId(e.target.value)}
-                          className="w-full px-3 py-2 text-sm bg-[rgb(var(--surface))] border border-[rgb(var(--border))] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        >
-                          <option value="">Select a workspace...</option>
-                          {spaces.map((space) => (
-                            <option key={space.id} value={space.id}>
-                              {space.icon || '📁'} {space.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={editLockedSpaceId}
+                            onChange={(e) => setEditLockedSpaceId(e.target.value)}
+                            className="appearance-none w-full bg-[rgb(var(--surface-hover))] border border-[rgb(var(--border-subtle))] rounded-lg pl-3 pr-8 py-1.5 text-sm text-[rgb(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))]/50 cursor-pointer"
+                          >
+                            <option value="">Select a workspace...</option>
+                            {spaces.map((space) => (
+                              <option key={space.id} value={space.id}>
+                                {space.icon || '📁'} {space.name}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[rgb(var(--muted))]" />
+                        </div>
                       </div>
                     )}
 

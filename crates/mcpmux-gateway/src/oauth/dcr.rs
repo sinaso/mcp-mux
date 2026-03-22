@@ -6,6 +6,7 @@
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, info, warn};
+use url::Url;
 use uuid::Uuid;
 
 /// Dynamic Client Registration Request (RFC 7591)
@@ -213,6 +214,43 @@ pub fn validate_redirect_uris(uris: &[String]) -> Result<(), DcrError> {
     }
 
     Ok(())
+}
+
+/// Check whether a redirect URI is a loopback address (127.0.0.1, localhost, [::1]).
+fn is_loopback_uri(uri: &str) -> bool {
+    uri.starts_with("http://127.0.0.1")
+        || uri.starts_with("http://localhost")
+        || uri.starts_with("http://[::1]")
+}
+
+/// RFC 8252 §7.3 compliant redirect URI matching.
+///
+/// For loopback redirect URIs the port MUST be ignored — only scheme, host,
+/// and path are compared. For all other URIs an exact string match is used.
+pub fn redirect_uri_matches(registered: &[String], requested: &str) -> bool {
+    // Fast path: exact match
+    if registered.contains(&requested.to_string()) {
+        return true;
+    }
+
+    // Loopback port-agnostic matching per RFC 8252 §7.3
+    if is_loopback_uri(requested) {
+        if let Ok(req) = Url::parse(requested) {
+            for reg in registered {
+                if !is_loopback_uri(reg) {
+                    continue;
+                }
+                if let Ok(r) = Url::parse(reg) {
+                    if r.scheme() == req.scheme() && r.host() == req.host() && r.path() == req.path()
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    false
 }
 
 /// Process a DCR request and return a registered client or error

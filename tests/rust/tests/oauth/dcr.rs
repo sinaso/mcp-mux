@@ -3,7 +3,7 @@
 //! Tests for DCR validation logic. Full integration tests with database
 //! are in the database test suite.
 
-use mcpmux_gateway::oauth::{validate_redirect_uris, DcrError, DcrRequest};
+use mcpmux_gateway::oauth::{redirect_uri_matches, validate_redirect_uris, DcrError, DcrRequest};
 
 // =============================================================================
 // Redirect URI Validation Tests
@@ -167,6 +167,60 @@ fn test_dcr_request_with_full_fields() {
     assert_eq!(request.grant_types.len(), 2);
     assert_eq!(request.scope, Some("openid mcp:read mcp:write".to_string()));
     assert_eq!(request.software_id, Some("com.cursor.app".to_string()));
+}
+
+// =============================================================================
+// RFC 8252 §7.3 Redirect URI Matching Tests
+// =============================================================================
+
+#[test]
+fn test_redirect_uri_exact_match() {
+    let registered = vec!["cursor://auth/callback".to_string()];
+    assert!(redirect_uri_matches(&registered, "cursor://auth/callback"));
+    assert!(!redirect_uri_matches(&registered, "cursor://auth/other"));
+}
+
+#[test]
+fn test_redirect_uri_loopback_ignores_port() {
+    let registered = vec!["http://127.0.0.1:8080/callback".to_string()];
+    assert!(redirect_uri_matches(&registered, "http://127.0.0.1:3000/callback"));
+    assert!(redirect_uri_matches(&registered, "http://127.0.0.1:59123/callback"));
+    assert!(redirect_uri_matches(&registered, "http://127.0.0.1/callback"));
+}
+
+#[test]
+fn test_redirect_uri_localhost_ignores_port() {
+    let registered = vec!["http://localhost:8080/callback".to_string()];
+    assert!(redirect_uri_matches(&registered, "http://localhost:3000/callback"));
+    assert!(redirect_uri_matches(&registered, "http://localhost/callback"));
+}
+
+#[test]
+fn test_redirect_uri_ipv6_loopback_ignores_port() {
+    let registered = vec!["http://[::1]:8080/callback".to_string()];
+    assert!(redirect_uri_matches(&registered, "http://[::1]:3000/callback"));
+    assert!(redirect_uri_matches(&registered, "http://[::1]/callback"));
+}
+
+#[test]
+fn test_redirect_uri_loopback_path_must_match() {
+    let registered = vec!["http://127.0.0.1:8080/callback".to_string()];
+    assert!(!redirect_uri_matches(&registered, "http://127.0.0.1:8080/other"));
+    assert!(!redirect_uri_matches(&registered, "http://127.0.0.1:8080/"));
+}
+
+#[test]
+fn test_redirect_uri_custom_scheme_exact_only() {
+    let registered = vec!["cursor://auth/callback".to_string()];
+    assert!(redirect_uri_matches(&registered, "cursor://auth/callback"));
+    assert!(!redirect_uri_matches(&registered, "cursor://auth/other"));
+    assert!(!redirect_uri_matches(&registered, "vscode://auth/callback"));
+}
+
+#[test]
+fn test_redirect_uri_no_cross_host_loopback() {
+    let registered = vec!["http://127.0.0.1:8080/callback".to_string()];
+    assert!(!redirect_uri_matches(&registered, "http://localhost:8080/callback"));
 }
 
 // Note: Full DCR integration tests with database are in tests/database/dcr.rs

@@ -14,7 +14,7 @@ use tracing::{debug, error, info, warn};
 
 use super::{GatewayState, ServiceContainer};
 use crate::auth::{create_access_token, create_refresh_token};
-use crate::oauth::{process_dcr_request, DcrError, DcrRequest, DcrResponse};
+use crate::oauth::{process_dcr_request, redirect_uri_matches, DcrError, DcrRequest, DcrResponse};
 
 /// App State structure holding both GatewayState and ServiceContainer
 #[derive(Clone)]
@@ -215,7 +215,7 @@ pub async fn oauth_authorize(
         };
 
         // Validate redirect_uri against resolved client
-        if !client.redirect_uris.contains(&params.redirect_uri) {
+        if !redirect_uri_matches(&client.redirect_uris, &params.redirect_uri) {
             warn!(
                 "[OAuth] Invalid redirect_uri for client: {} (expected one of: {:?})",
                 params.redirect_uri, client.redirect_uris

@@ -39,6 +39,8 @@ fn main() {
 
     // Compile-time config
     let registry_url = extract_toml_string(&content, "registry_url").unwrap_or("");
+    let software_updates_enabled =
+        extract_toml_bool(&content, "software_updates_enabled").unwrap_or(true);
 
     // OAuth branding fields (RFC 7591 DCR metadata)
     let oauth_logo_uri = extract_toml_string(&content, "logo_uri").unwrap_or("");
@@ -99,6 +101,9 @@ pub const OAUTH_POLICY_URI: &str = {oauth_policy_uri:?};
 /// Registry API base URL (from app.toml [config] registry_url)
 /// Empty string means fall back to the hardcoded default.
 pub const REGISTRY_URL: &str = {registry_url:?};
+
+/// Whether the Software Updates section is shown in Settings (from app.toml [config])
+pub const SOFTWARE_UPDATES_ENABLED: bool = {software_updates_enabled};
 "#,
         display_name = display_name,
         identifier = identifier,
@@ -115,6 +120,7 @@ pub const REGISTRY_URL: &str = {registry_url:?};
         oauth_tos_uri = oauth_tos_uri,
         oauth_policy_uri = oauth_policy_uri,
         registry_url = registry_url,
+        software_updates_enabled = software_updates_enabled,
     );
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");
@@ -143,9 +149,28 @@ pub const OAUTH_CLIENT_URI: &str = "";
 pub const OAUTH_TOS_URI: &str = "";
 pub const OAUTH_POLICY_URI: &str = "";
 pub const REGISTRY_URL: &str = "";
+pub const SOFTWARE_UPDATES_ENABLED: bool = true;
 "#;
 
     fs::write(&rust_path, rust_code).expect("Failed to write branding_generated.rs");
+}
+
+/// Extract a boolean value from TOML content (simple parser, no dependencies)
+fn extract_toml_bool(content: &str, key: &str) -> Option<bool> {
+    for line in content.lines() {
+        let line = line.trim();
+        if line.starts_with(key) {
+            if let Some(eq_pos) = line.find('=') {
+                let value = line[eq_pos + 1..].trim();
+                return match value {
+                    "true" => Some(true),
+                    "false" => Some(false),
+                    _ => None,
+                };
+            }
+        }
+    }
+    None
 }
 
 /// Extract a string value from TOML content (simple parser, no dependencies)

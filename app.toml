@@ -44,3 +44,6 @@ policy_uri = "https://mcpmux.com/docs/"
 [config]
 # Registry API base URL (overridable via MCPMUX_REGISTRY_URL env var at runtime)
 registry_url = "https://api.mcpmux.com"
+
+# Show the Software Updates section in Settings (set to false to hide it entirely)
+software_updates_enabled = false

@@ -41,6 +41,7 @@ export function SettingsPage() {
   const setAnalyticsEnabled = useAppStore((state) => state.setAnalyticsEnabled);
   const [logsPath, setLogsPath] = useState<string>('');
   const [openingLogs, setOpeningLogs] = useState(false);
+  const [softwareUpdatesEnabled, setSoftwareUpdatesEnabled] = useState(true);
   const { toasts, success, error } = useToast();
 
   // Startup settings state
@@ -55,6 +56,13 @@ export function SettingsPage() {
   // Log retention state
   const [logRetentionDays, setLogRetentionDays] = useState<number>(30);
   const [savingRetention, setSavingRetention] = useState(false);
+
+  // Load feature flags on mount
+  useEffect(() => {
+    invoke<boolean>('get_software_updates_enabled')
+      .then(setSoftwareUpdatesEnabled)
+      .catch(() => {/* default true already set */});
+  }, []);
 
   // Load logs path on mount
   useEffect(() => {
@@ -168,7 +176,7 @@ export function SettingsPage() {
         </div>
 
       {/* Updates Section */}
-      <UpdateChecker />
+      {softwareUpdatesEnabled && <UpdateChecker />}
 
       {/* Startup & System Tray Section - always show toggles so e2e and slow backends see the section */}
       <Card data-testid="settings-startup-section">

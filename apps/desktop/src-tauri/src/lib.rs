@@ -128,6 +128,12 @@ fn get_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
+/// Whether the Software Updates section is enabled (compile-time flag from app.toml)
+#[tauri::command]
+fn get_software_updates_enabled() -> bool {
+    mcpmux_core::branding::SOFTWARE_UPDATES_ENABLED
+}
+
 /// Get the on-disk bundle version (macOS only).
 ///
 /// After a Homebrew Cask upgrade, the `.app` bundle on disk has the new version
@@ -765,6 +771,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_version,
             get_bundle_version,
+            get_software_updates_enabled,
             // Space commands
             commands::list_spaces,
             commands::get_space,

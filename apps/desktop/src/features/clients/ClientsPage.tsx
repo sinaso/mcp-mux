@@ -548,12 +548,12 @@ export default function ClientsPage() {
   return (
     <div className="h-full flex flex-col relative" data-testid="clients-page">
       {/* Header */}
-      <div className="flex-shrink-0 p-8 border-b border-[rgb(var(--border-subtle))]">
+      <div className="flex-shrink-0 p-6 border-b border-[rgb(var(--border-subtle))]">
         <div className="max-w-[2000px] mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold" data-testid="clients-title">Connected Clients</h1>
-              <p className="text-base text-[rgb(var(--muted))] mt-2">
+              <h1 className="text-2xl font-bold" data-testid="clients-title">Connected Clients</h1>
+              <p className="text-sm text-[rgb(var(--muted))] mt-1">
                 Manage OAuth clients and their permissions
               </p>
             </div>
@@ -584,7 +584,7 @@ export default function ClientsPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex-shrink-0 px-8 pt-6">
+        <div className="flex-shrink-0 px-6 pt-6">
           <div className="max-w-[2000px] mx-auto p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-base text-red-600 dark:text-red-400">{error}</p>
@@ -593,7 +593,7 @@ export default function ClientsPage() {
       )}
 
       {/* Clients Grid */}
-      <div className="flex-1 overflow-auto px-8 py-8">
+      <div className="flex-1 overflow-auto p-6">
         <div className="max-w-[2000px] mx-auto">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">

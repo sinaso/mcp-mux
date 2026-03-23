@@ -169,10 +169,10 @@ export function SettingsPage() {
   return (
     <>
       <ToastContainer toasts={toasts} onClose={(id) => toasts.find(t => t.id === id)?.onClose(id)} />
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-[rgb(var(--muted))]">Configure McpMux preferences.</p>
+          <p className="text-sm text-[rgb(var(--muted))] mt-1">Configure McpMux preferences.</p>
         </div>
 
       {/* Updates Section */}

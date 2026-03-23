@@ -139,7 +139,7 @@ export function RegistryPage() {
       <ToastContainer toasts={toasts} onClose={dismiss} />
       {/* Header */}
       <div className="p-6 border-b border-[rgb(var(--border-subtle))]">
-        <div className="flex items-center gap-3 mb-1">
+        <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold" data-testid="registry-title">Discover Servers</h1>
           {isOffline && (
             <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full">
@@ -147,7 +147,7 @@ export function RegistryPage() {
             </span>
           )}
         </div>
-        <p className="text-sm text-[rgb(var(--muted))]">
+        <p className="text-sm text-[rgb(var(--muted))] mt-1">
           {isOffline 
             ? 'Showing cached servers (no internet connection)'
             : 'Browse and install MCP servers from the registry'
@@ -156,7 +156,7 @@ export function RegistryPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="p-4 border-b border-[rgb(var(--border-subtle))] space-y-4">
+      <div className="p-6 border-b border-[rgb(var(--border-subtle))] space-y-4">
         {/* Search */}
         <div className="relative">
           <svg
@@ -220,7 +220,7 @@ export function RegistryPage() {
 
       {/* Error */}
       {error && (
-        <div className="mx-4 mt-4 p-4 bg-[rgb(var(--error))]/10 border border-[rgb(var(--error))]/30 rounded-lg text-[rgb(var(--error))] text-sm flex items-center justify-between">
+        <div className="mx-6 mt-6 p-4 bg-[rgb(var(--error))]/10 border border-[rgb(var(--error))]/30 rounded-lg text-[rgb(var(--error))] text-sm flex items-center justify-between">
           <span>{error}</span>
           <button onClick={clearError} className="hover:opacity-70">
             ✕
@@ -229,7 +229,7 @@ export function RegistryPage() {
       )}
 
       {/* Server Grid */}
-      <div className="flex-1 overflow-y-auto p-4 registry-grid-container">
+      <div className="flex-1 overflow-y-auto p-6 registry-grid-container">
         {isLoading && displayServers.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-[rgb(var(--primary))] border-t-transparent" />
@@ -264,7 +264,7 @@ export function RegistryPage() {
       </div>
 
       {/* Footer: Stats & Pagination */}
-      <div className="p-4 border-t border-[rgb(var(--border-subtle))] flex items-center justify-between bg-[rgb(var(--surface))]">
+      <div className="p-6 border-t border-[rgb(var(--border-subtle))] flex items-center justify-between bg-[rgb(var(--surface))]">
         <div className="text-sm text-[rgb(var(--muted))]" data-testid="server-count">
           {displayServers.length} server{displayServers.length !== 1 ? 's' : ''} found
           {servers.filter((s) => s.is_installed).length > 0 && (

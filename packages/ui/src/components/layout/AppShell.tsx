@@ -33,7 +33,7 @@ export function AppShell({ sidebar, children, statusBar, titleBar, windowControl
         </aside>
 
         {/* Content area */}
-        <main className="flex-1 overflow-y-scroll p-6 bg-[rgb(var(--background))]">
+        <main className="flex-1 overflow-y-scroll bg-[rgb(var(--background))]">
           {children}
         </main>
       </div>

@@ -439,10 +439,10 @@ function DashboardView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-[rgb(var(--muted))]">
+        <p className="text-sm text-[rgb(var(--muted))] mt-1">
           Welcome to McpMux - your centralized MCP server manager.
         </p>
       </div>

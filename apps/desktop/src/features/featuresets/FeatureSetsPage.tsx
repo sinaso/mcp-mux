@@ -203,19 +203,19 @@ export function FeatureSetsPage() {
       <ToastContainer toasts={toasts} onClose={(id) => toasts.find(t => t.id === id)?.onClose(id)} />
       <div className="h-full flex flex-col relative" data-testid="featuresets-page">
       {/* Header */}
-      <div className="flex-shrink-0 p-8 border-b border-[rgb(var(--border-subtle))]">
+      <div className="flex-shrink-0 p-6 border-b border-[rgb(var(--border-subtle))]">
         <div className="max-w-[2000px] mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">Feature Sets</h1>
+                <h1 className="text-2xl font-bold">Feature Sets</h1>
                 {viewSpace && (
                   <span className="px-2 py-0.5 rounded-md bg-[rgb(var(--surface-elevated))] text-xs border border-[rgb(var(--border))] whitespace-nowrap">
                     {viewSpace.icon || '📁'} {viewSpace.name}
                   </span>
                 )}
               </div>
-              <p className="text-base text-[rgb(var(--muted))]">
+              <p className="text-sm text-[rgb(var(--muted))] mt-1">
                 Manage reusable collections of features, prompts, and resources
               </p>
             </div>
@@ -252,7 +252,7 @@ export function FeatureSetsPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex-shrink-0 px-8 pt-6">
+        <div className="flex-shrink-0 px-6 pt-6">
           <div className="max-w-[2000px] mx-auto p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-base text-red-600 dark:text-red-400">{error}</p>
@@ -261,7 +261,7 @@ export function FeatureSetsPage() {
       )}
 
       {/* Content Grid */}
-      <div className="flex-1 overflow-auto px-8 py-8">
+      <div className="flex-1 overflow-auto p-6">
         <div className="max-w-[2000px] mx-auto">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">

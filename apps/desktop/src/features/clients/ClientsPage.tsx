@@ -552,7 +552,7 @@ export default function ClientsPage() {
         <div className="max-w-[2000px] mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold" data-testid="clients-title">Connected Clients</h1>
+              <h1 className="text-2xl font-bold" data-testid="clients-title">Clients</h1>
               <p className="text-sm text-[rgb(var(--muted))] mt-1">
                 Manage OAuth clients and their permissions
               </p>

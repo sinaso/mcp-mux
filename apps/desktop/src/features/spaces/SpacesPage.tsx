@@ -132,7 +132,7 @@ export function SpacesPage() {
         <div className="max-w-[2000px] mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold">Workspaces</h1>
+              <h1 className="text-2xl font-bold">Spaces</h1>
               <p className="text-sm text-[rgb(var(--muted))] mt-1">
                 Manage isolated environments with their own credentials and server configurations
               </p>

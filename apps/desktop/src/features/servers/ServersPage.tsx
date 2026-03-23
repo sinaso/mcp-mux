@@ -850,7 +850,7 @@ export function ServersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="servers-title">My Servers</h1>
+          <h1 className="text-2xl font-bold" data-testid="servers-title">Servers</h1>
           <p className="text-sm text-[rgb(var(--muted))] mt-1">
             Manage your installed MCP servers
           </p>

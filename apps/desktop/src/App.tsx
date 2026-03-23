@@ -203,7 +203,7 @@ function AppContent() {
         />
         <SidebarItem
           icon={<Server className="h-4 w-4" />}
-          label="My Servers"
+          label="Servers"
           active={activeNav === 'servers'}
           onClick={() => navigateTo('servers')}
           data-testid="nav-my-servers"
@@ -227,7 +227,7 @@ function AppContent() {
         />
         <SidebarItem
           icon={<Wrench className="h-4 w-4" />}
-          label="FeatureSets"
+          label="Feature Sets"
           active={activeNav === 'featuresets'}
           onClick={() => navigateTo('featuresets')}
           data-testid="nav-featuresets"
@@ -498,7 +498,7 @@ function DashboardView() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Wrench className="h-5 w-5 text-primary-500" />
-              FeatureSets
+              Feature Sets
             </CardTitle>
           </CardHeader>
           <CardContent>

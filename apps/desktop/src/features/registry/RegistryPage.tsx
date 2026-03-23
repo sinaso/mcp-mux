@@ -108,7 +108,7 @@ export function RegistryPage() {
       success('Server installed', `"${serverName}" has been installed`, {
         duration: 6000,
         action: {
-          label: 'Go to My Servers to enable →',
+          label: 'Go to Servers to enable →',
           onClick: () => navigateTo('servers'),
         },
       });
